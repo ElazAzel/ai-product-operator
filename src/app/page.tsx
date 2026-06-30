@@ -68,11 +68,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Money Connection Banner */}
-      <Card className="border-violet-500/20 bg-gradient-to-r from-violet-500/10 to-blue-500/10">
+      <Card className="border-t-2 border-accent bg-surface">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-violet-400 text-sm font-medium mb-2">
+              <div className="flex items-center gap-2 text-accent text-sm font-medium mb-2">
                 <DollarSign className="h-4 w-4" />
                 Связь с целью
               </div>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ArrowRight className="h-5 w-5 text-violet-500" />
+              <ArrowRight className="h-5 w-5 text-accent" />
               Следующее действие
             </CardTitle>
           </CardHeader>
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                     href={action.href}
                     className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                   >
-                    <action.icon className="h-5 w-5 text-violet-500" />
+                    <action.icon className="h-5 w-5 text-muted" />
                     <span className="text-sm font-medium">{action.label}</span>
                     <ArrowRight className="h-4 w-4 ml-auto text-zinc-400" />
                   </Link>

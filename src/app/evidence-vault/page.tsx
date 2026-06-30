@@ -152,7 +152,7 @@ export default function EvidenceVaultPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-            <Database className="h-7 w-7 text-violet-500" />
+            <Database className="h-7 w-7 text-accent" />
             Evidence Vault
           </h1>
           <p className="text-zinc-400 mt-1 text-sm md:text-base">
@@ -183,7 +183,7 @@ export default function EvidenceVaultPage() {
           <div className="text-xs text-zinc-500">AI-услуги</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-violet-400">{stats.linkmax}</div>
+          <div className="text-2xl font-bold text-accent">{stats.linkmax}</div>
           <div className="text-xs text-zinc-500">LinkMAX</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
@@ -243,7 +243,7 @@ export default function EvidenceVaultPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((card) => (
-            <Card key={card.id} className="cursor-pointer hover:shadow-lg hover:shadow-violet-500/5 transition-all group"
+            <Card key={card.id} className="cursor-pointer hover:shadow-lg hover:shadow-accent/5 transition-all group"
               onClick={() => setSelectedCard(card.id)}>
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">

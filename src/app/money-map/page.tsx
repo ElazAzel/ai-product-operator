@@ -34,7 +34,7 @@ export default function MoneyMapPage() {
       module: 5,
       lessons: ['les-5-3'],
       icon: Zap,
-      color: 'text-violet-500',
+      color: 'text-accent',
     },
     {
       title: 'AI-база знаний',
@@ -77,7 +77,7 @@ export default function MoneyMapPage() {
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-          <DollarSign className="h-7 w-7 text-violet-500" />
+          <DollarSign className="h-7 w-7 text-accent" />
           Money Map
         </h1>
         <p className="text-zinc-400 mt-1 text-sm md:text-base">
@@ -86,11 +86,11 @@ export default function MoneyMapPage() {
       </div>
 
       {/* Goal */}
-      <Card className="border-violet-500/20 bg-gradient-to-r from-violet-500/10 to-blue-500/10">
+      <Card className="border-t-2 border-accent bg-surface">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-sm text-violet-400 font-medium mb-1">Главная цель</div>
+              <div className="text-sm text-accent font-medium mb-1">Главная цель</div>
               <div className="text-2xl font-bold md:text-3xl">{formatCurrency(user.income_goal)}/мес</div>
             </div>
             <div className="text-left sm:text-right">

@@ -46,7 +46,7 @@ export default function ReviewsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-            <ClipboardList className="h-7 w-7 text-violet-500" />
+            <ClipboardList className="h-7 w-7 text-accent" />
             Reviews
           </h1>
           <p className="text-zinc-400 mt-1 text-sm md:text-base">
@@ -75,7 +75,7 @@ export default function ReviewsPage() {
             <Card key={review.id}>
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-violet-500" />
+                  <Calendar className="h-5 w-5 text-muted" />
                   <div>
                     <div className="font-semibold">{review.period_start} — {review.period_end}</div>
                     <div className="text-xs text-zinc-500">{formatDate(review.created_at)}</div>

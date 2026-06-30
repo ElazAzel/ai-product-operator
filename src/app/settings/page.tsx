@@ -71,7 +71,7 @@ export default function SettingsPage() {
     <div className="space-y-8 animate-fade-in max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-          <SettingsIcon className="h-7 w-7 text-violet-500" />
+          <SettingsIcon className="h-7 w-7 text-accent" />
           Settings
         </h1>
         <p className="text-zinc-400 mt-1 text-sm md:text-base">
@@ -83,7 +83,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5 text-violet-500" />
+            <User className="h-5 w-5 text-accent" />
             Профиль
           </CardTitle>
         </CardHeader>
@@ -103,7 +103,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-violet-500" />
+            <Target className="h-5 w-5 text-accent" />
             Цели
           </CardTitle>
         </CardHeader>
@@ -144,7 +144,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5 text-violet-500" />
+            <Download className="h-5 w-5 text-accent" />
             Экспорт данных
           </CardTitle>
         </CardHeader>

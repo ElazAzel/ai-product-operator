@@ -55,7 +55,7 @@ export default function SkillScorecardPage() {
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-          <BarChart3 className="h-7 w-7 text-violet-500" />
+          <BarChart3 className="h-7 w-7 text-accent" />
           Skill Scorecard
         </h1>
         <p className="text-zinc-400 mt-1">
@@ -68,8 +68,8 @@ export default function SkillScorecardPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-violet-500/10">
-                <Target className="h-5 w-5 text-violet-500" />
+                <div className="p-2 rounded-lg bg-accent-subtle">
+                  <Target className="h-5 w-5 text-accent" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{avgScore}</div>

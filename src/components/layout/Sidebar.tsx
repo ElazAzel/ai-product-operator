@@ -41,7 +41,7 @@ export function Sidebar() {
       <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-4 dark:border-zinc-800">
         {(sidebarOpen || mobileOpen) && (
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-violet-600" />
+            <Sparkles className="h-5 w-5 text-accent" />
             <span className="text-sm font-bold tracking-tight">AI Product Operator</span>
           </div>
         )}
@@ -73,7 +73,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400"
+                  ? "bg-accent-subtle text-accent dark:bg-accent-subtle dark:text-accent"
                   : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
                 !(sidebarOpen || mobileOpen) && "justify-center"
               )}
@@ -91,7 +91,7 @@ export function Sidebar() {
         <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
           <Link
             href={`/lesson/${currentLessonId}`}
-            className="flex items-center gap-3 rounded-xl bg-violet-50 px-3 py-2.5 text-sm font-medium text-violet-700 transition-colors hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20"
+            className="flex items-center gap-3 rounded-xl bg-accent-subtle px-3 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent-subtle"
           >
             <BookOpen className="h-5 w-5" />
             <span>Текущий урок</span>

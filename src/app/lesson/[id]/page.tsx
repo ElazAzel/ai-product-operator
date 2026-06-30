@@ -204,7 +204,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
           )}
         </div>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{lesson.title}</h1>
-        <p className="text-violet-400 mt-2 font-medium">{lesson.goal}</p>
+        <p className="text-accent mt-2 font-medium">{lesson.goal}</p>
       </div>
 
       {/* Completion Progress */}
@@ -256,7 +256,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Package className="h-5 w-5 text-violet-500" />
+                <Package className="h-5 w-5 text-muted" />
                 Артефакт на выходе
               </CardTitle>
             </CardHeader>
@@ -351,7 +351,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
                   >
                     <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                       checklist[item.key]
-                        ? 'bg-violet-600 border-violet-600'
+                         ? 'bg-accent border-accent'
                         : 'border-zinc-600 group-hover:border-zinc-400'
                     }`}>
                       {checklist[item.key] && <CheckCircle2 className="h-3 w-3 text-white" />}

@@ -70,7 +70,7 @@ export default function ArtifactsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-            <Package className="h-7 w-7 text-violet-500" />
+            <Package className="h-7 w-7 text-accent" />
             Artifacts
           </h1>
           <p className="text-zinc-400 mt-1 text-sm md:text-base">

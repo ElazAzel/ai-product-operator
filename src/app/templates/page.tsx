@@ -36,7 +36,7 @@ export default function TemplatesPage() {
   };
 
   const categoryColors: Record<string, string> = {
-    evidence: 'bg-violet-500/10 text-violet-500',
+    evidence: 'bg-accent-subtle text-accent',
     service: 'bg-blue-500/10 text-blue-500',
     linkmax: 'bg-amber-500/10 text-amber-500',
     academy: 'bg-emerald-500/10 text-emerald-500',
@@ -48,7 +48,7 @@ export default function TemplatesPage() {
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-          <FileText className="h-7 w-7 text-violet-500" />
+          <FileText className="h-7 w-7 text-accent" />
           Templates
         </h1>
         <p className="text-zinc-400 mt-1 text-sm md:text-base">

@@ -4,18 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-[var(--focus-ring)] disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
   {
     variants: {
       variant: {
-        default: "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200",
-        destructive: "bg-red-500 text-white hover:bg-red-600",
-        outline: "border border-zinc-200 bg-transparent hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800",
-        secondary: "bg-zinc-100 text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
-        ghost: "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-        link: "text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100",
-        primary: "bg-violet-600 text-white hover:bg-violet-700",
-        success: "bg-emerald-600 text-white hover:bg-emerald-700",
+        default: "bg-fg text-surface hover:bg-fg-2 dark:bg-surface dark:text-fg dark:hover:bg-surface-hover",
+        destructive: "bg-danger text-white hover:opacity-90",
+        outline: "border border-border bg-transparent hover:bg-surface-hover",
+        secondary: "bg-surface-hover text-fg hover:brightness-95 dark:hover:brightness-110",
+        ghost: "hover:bg-surface-hover",
+        link: "text-fg underline-offset-4 hover:underline",
+        primary: "bg-accent text-accent-on hover:bg-accent-hover active:bg-accent-active",
+        success: "bg-success text-white hover:opacity-90",
       },
       size: {
         default: "h-10 px-4 py-2",

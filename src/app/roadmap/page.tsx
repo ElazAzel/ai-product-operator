@@ -31,7 +31,7 @@ export default function RoadmapPage() {
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 md:text-3xl">
-          <Map className="h-7 w-7 text-violet-500" />
+          <Map className="h-7 w-7 text-accent" />
           Course Roadmap
         </h1>
         <p className="text-zinc-400 mt-1 text-sm md:text-base">
@@ -49,7 +49,7 @@ export default function RoadmapPage() {
           return (
             <Card
               key={module.id}
-              className={`relative transition-all hover:shadow-lg hover:shadow-violet-500/5 ${locked ? 'opacity-50' : ''}`}
+              className={`relative transition-all hover:shadow-lg hover:shadow-accent/5 ${locked ? 'opacity-50' : ''}`}
             >
               {locked && (
                 <div className="absolute top-4 right-4">
