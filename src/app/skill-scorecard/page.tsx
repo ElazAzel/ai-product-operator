@@ -118,7 +118,7 @@ export default function SkillScorecardPage() {
                 <PolarGrid stroke="#3f3f46" />
                 <PolarAngleAxis dataKey="name" tick={{ fill: '#a1a1aa', fontSize: 12 }} />
                 <PolarRadiusAxis angle={30} domain={[0, 5]} tick={{ fill: '#71717a', fontSize: 10 }} />
-                <Radar name="Текущий уровень" dataKey="current" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.2} />
+                <Radar name="Текущий уровень" dataKey="current" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.2} />
                 <Radar name="Baseline" dataKey="baseline" stroke="#3f3f46" fill="#3f3f46" fillOpacity={0.1} />
                 <Legend />
               </RadarChart>

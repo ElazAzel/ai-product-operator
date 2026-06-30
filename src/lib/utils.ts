@@ -23,7 +23,7 @@ export function getDirectionLabel(direction: Direction): string {
 export function getDirectionColor(direction: Direction): string {
   const colors: Record<Direction, string> = {
     'ai-services': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    'linkmax': 'bg-violet-500/10 text-violet-500 border-violet-500/20',
+    'linkmax': 'bg-accent-subtle text-accent border-accent/20',
     'academy': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     'skill': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
   };
@@ -54,7 +54,7 @@ export function getStatusColor(status: string): string {
     'validated': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     'case-ready': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     'tested': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    'packaged': 'bg-violet-500/10 text-violet-500 border-violet-500/20',
+    'packaged': 'bg-accent-subtle text-accent border-accent/20',
     'published': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
   };
   return colors[status] || 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
