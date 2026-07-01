@@ -1,8 +1,8 @@
 'use client';
 
 import { create } from 'zustand';
-import { User, Module, Lesson, EvidenceCard, Artifact, Skill, WeeklyPlan, Review, Direction, LessonStatus, CompletionChecklist, IncomeEntry } from './types';
-import { defaultUser, seedModules, seedLessons, defaultSkills } from './seed-data';
+import { User, Module, Lesson, EvidenceCard, Artifact, Skill, WeeklyPlan, Review, Direction, LessonStatus, CompletionChecklist, IncomeEntry, Certification, CertificationEvidenceCard } from './types';
+import { defaultUser, seedModules, seedLessons, defaultSkills, seedCertifications } from './seed-data';
 import { generateId, calculateModuleProgress } from './utils';
 
 interface AppState {
@@ -15,6 +15,8 @@ interface AppState {
   weeklyPlans: WeeklyPlan[];
   reviews: Review[];
   incomeEntries: IncomeEntry[];
+  certifications: Certification[];
+  certificationCards: CertificationEvidenceCard[];
   currentLessonId: string | null;
   sidebarOpen: boolean;
   lessonChecklists: Record<string, CompletionChecklist>;
@@ -43,6 +45,9 @@ interface AppState {
 
   addIncomeEntry: (entry: Omit<IncomeEntry, 'id' | 'created_at'>) => void;
   deleteIncomeEntry: (id: string) => void;
+
+  addCertificationCard: (card: Omit<CertificationEvidenceCard, 'id' | 'created_at'>) => void;
+  deleteCertificationCard: (id: string) => void;
 
   toggleSidebar: () => void;
 
@@ -84,6 +89,8 @@ export const useStore = create<AppState>((set, get) => ({
   weeklyPlans: [],
   reviews: [],
   incomeEntries: [],
+  certifications: seedCertifications,
+  certificationCards: [],
   currentLessonId: null,
   sidebarOpen: true,
   lessonChecklists: {},
@@ -250,6 +257,21 @@ export const useStore = create<AppState>((set, get) => ({
     return { incomeEntries: state.incomeEntries.filter(e => e.id !== id) };
   }),
 
+  addCertificationCard: (card) => set((state) => {
+    const newCard: CertificationEvidenceCard = {
+      ...card,
+      id: generateId(),
+      created_at: new Date().toISOString(),
+    };
+    setTimeout(() => get().saveToStorage(), 0);
+    return { certificationCards: [...state.certificationCards, newCard] };
+  }),
+
+  deleteCertificationCard: (id) => set((state) => {
+    setTimeout(() => get().saveToStorage(), 0);
+    return { certificationCards: state.certificationCards.filter(c => c.id !== id) };
+  }),
+
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
   setLessonChecklist: (lessonId, checklist) => set((state) => {
@@ -354,6 +376,8 @@ export const useStore = create<AppState>((set, get) => ({
           weeklyPlans: data.weeklyPlans || [],
           reviews: data.reviews || [],
           incomeEntries: data.incomeEntries || [],
+          certifications: data.certifications || seedCertifications,
+          certificationCards: data.certificationCards || [],
           lessonChecklists: data.lessonChecklists || {},
         });
       }
@@ -376,6 +400,8 @@ export const useStore = create<AppState>((set, get) => ({
         weeklyPlans: state.weeklyPlans,
         reviews: state.reviews,
         incomeEntries: state.incomeEntries,
+        certifications: state.certifications,
+        certificationCards: state.certificationCards,
         lessonChecklists: state.lessonChecklists,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -395,6 +421,8 @@ export const useStore = create<AppState>((set, get) => ({
       weeklyPlans: [],
       reviews: [],
       incomeEntries: [],
+      certifications: seedCertifications,
+      certificationCards: [],
       lessonChecklists: {},
     });
     if (typeof window !== 'undefined') {

@@ -168,3 +168,30 @@ export interface CompletionChecklist {
   artifact_added: boolean;
   evidence_card_filled: boolean;
 }
+
+export interface Certification {
+  id: string;
+  title: string;
+  provider: string;
+  url: string;
+  cost: string;
+  level: 'free' | 'paid' | 'premium';
+  module_id: string | null;
+  order_index: number;
+  description: string;
+  skills: string[];
+  created_at: string;
+}
+
+export interface CertificationEvidenceCard {
+  id: string;
+  user_id: string;
+  certification_id: string;
+  certification_title: string;
+  provider: string;
+  date_completed: string;
+  url: string;
+  reflection: string;
+  linked: boolean;
+  created_at: string;
+}

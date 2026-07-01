@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Map, BookOpen, Database, BarChart3,
   Calendar, Package, DollarSign, ClipboardList, FileText,
-  Settings, ChevronLeft, ChevronRight, Sparkles, Menu, X
+  Settings, ChevronLeft, ChevronRight, Sparkles, Menu, X,
+  Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/lib/store';
@@ -21,6 +22,7 @@ const navItems = [
   { href: '/money-map', label: 'Money Map', icon: DollarSign },
   { href: '/reviews', label: 'Reviews', icon: ClipboardList },
   { href: '/templates', label: 'Templates', icon: FileText },
+  { href: '/certifications', label: 'Certifications', icon: Award },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

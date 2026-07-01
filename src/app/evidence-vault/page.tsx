@@ -17,11 +17,12 @@ import {
 } from '@/lib/utils';
 import { Direction, EvidenceStatus, CasePotential } from '@/lib/types';
 import {
-  Database, Plus, Search, Download, Trash2, ExternalLink, Pencil, CheckCircle2
+  Database, Plus, Search, Download, Trash2, ExternalLink, Pencil, CheckCircle2, Award, Circle
 } from 'lucide-react';
 
 export default function EvidenceVaultPage() {
-  const { evidenceCards, modules, lessons, addEvidenceCard, updateEvidenceCard, deleteEvidenceCard } = useStore();
+  const { evidenceCards, certificationCards, modules, lessons, certifications, addEvidenceCard, updateEvidenceCard, deleteEvidenceCard, deleteCertificationCard } = useStore();
+  const [activeTab, setActiveTab] = useState<'evidence' | 'certification'>('evidence');
   const [search, setSearch] = useState('');
   const [filterDirection, setFilterDirection] = useState<Direction | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<EvidenceStatus | 'all'>('all');
@@ -196,6 +197,20 @@ export default function EvidenceVaultPage() {
         </CardContent></Card>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-zinc-800 pb-2">
+        <Button variant={activeTab === 'evidence' ? 'default' : 'outline'} size="sm"
+          onClick={() => setActiveTab('evidence')}>
+          <Database className="h-4 w-4 mr-1" /> Evidence Cards ({evidenceCards.length})
+        </Button>
+        <Button variant={activeTab === 'certification' ? 'default' : 'outline'} size="sm"
+          onClick={() => setActiveTab('certification')}>
+          <Award className="h-4 w-4 mr-1" /> Сертификаты ({certificationCards.length})
+        </Button>
+      </div>
+
+      {activeTab === 'evidence' && (
+        <>
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
@@ -458,6 +473,64 @@ export default function EvidenceVaultPage() {
           )}
         </DialogContent>
       </Dialog>
+      </> )}
+
+      {activeTab === 'certification' && (
+        <>
+        {certificationCards.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Award className="h-16 w-16 text-zinc-700 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Сертификаты не получены</h3>
+              <p className="text-zinc-500">
+                Отмечай пройденные сертификации на странице Certification Map.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {certificationCards.map(card => {
+              const cert = certifications.find(c => c.id === card.certification_id);
+              return (
+                <Card key={card.id}>
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-sm">{card.certification_title}</h3>
+                        <p className="text-xs text-zinc-500">{card.provider}</p>
+                      </div>
+                    </div>
+                    {card.date_completed && (
+                      <p className="text-xs text-zinc-500 mb-2">
+                        Получен: {formatDate(card.date_completed)}
+                      </p>
+                    )}
+                    {card.reflection && (
+                      <p className="text-xs text-zinc-400 italic border-t border-zinc-800 pt-2 mt-2">
+                        {card.reflection}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-3">
+                      {card.url && (
+                        <a href={card.url} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                          <ExternalLink className="h-3 w-3" /> Сертификат
+                        </a>
+                      )}
+                      <Button variant="ghost" size="sm" className="h-7 text-xs text-red-400 ml-auto"
+                        onClick={() => deleteCertificationCard(card.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+        </>
+      )}
     </div>
   );
 }
