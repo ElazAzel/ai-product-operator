@@ -57,7 +57,7 @@ export default function MoneyMapPage() {
     },
     {
       title: 'AI-продукты',
-      description: 'Свои AI-функции, Page Builder, micro-SaaS',
+      description: 'Свои AI-функции, мини-продукты, SaaS',
       price: 'Product revenue',
       status: 'available',
       module: 6,

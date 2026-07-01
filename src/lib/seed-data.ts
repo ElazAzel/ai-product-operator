@@ -3,8 +3,8 @@ import { generateId } from './utils';
 
 export const defaultUser: User = {
   id: 'user-1',
-  name: 'Ильяс Азелханов',
-  email: 'ilyas@linkmax.kz',
+  name: 'Студент AI-продуктов',
+  email: 'student@example.com',
   role: 'owner',
   income_goal: 1000000,
   weekly_hours_goal: 15,
@@ -22,7 +22,7 @@ export const seedModules: Module[] = [
   { id: 'mod-6', title: 'AI-продукты: проектирование AI-функций', description: 'Спроектировать собственную AI-функцию или мини-продукт — для своего бизнеса, работодателя, клиента или pet-проекта.', result: 'Спроектировать AI-функцию или мини-продукт.', order_index: 6, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '350000' },
   { id: 'mod-7', title: 'API и structured outputs для AI-product operator', description: 'Понять API на уровне продуктового оператора и собрать первый мини-инструмент input → AI → output.', result: 'Понять API и собрать мини-инструмент.', order_index: 7, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '250000' },
   { id: 'mod-8', title: 'No-code автоматизация: Make/n8n, таблицы, Telegram, CRM', description: 'Собрать простые автоматизации, которые можно показать клиенту и использовать в своих проектах.', result: 'Собрать простые автоматизации для клиентов и своих проектов.', order_index: 8, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '200000' },
-  { id: 'mod-9', title: 'RAG и базы знаний', description: 'Понять RAG и собрать mini-RAG demo для LinkMAX, экспертов или образовательных проектов.', result: 'Понять RAG и собрать mini-RAG demo.', order_index: 9, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '400000' },
+  { id: 'mod-9', title: 'RAG и базы знаний', description: 'Понять RAG и собрать mini-RAG demo для экспертов или образовательных проектов.', result: 'Понять RAG и собрать mini-RAG demo.', order_index: 9, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '400000' },
   { id: 'mod-10', title: 'AI-агенты, инструменты и MCP', description: 'Понять агентов и MCP на прикладном уровне, собрать безопасный агентный workflow с ограниченными действиями.', result: 'Понять агентов и MCP, собрать безопасный workflow.', order_index: 10, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '500000' },
   { id: 'mod-11', title: 'Обучение как продукт: курс, контент, менторство', description: 'Упаковать свою экспертизу в обучающий продукт — курс, серию контента или менторскую программу.', result: 'Упаковать экспертизу в обучающий продукт.', order_index: 11, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '300000' },
   { id: 'mod-12', title: 'Масштабирование: портфель, ретейнеры, рост чека', description: 'Собрать годовой портфель, повысить цены, перевести разовые внедрения в сопровождение.', result: 'Собрать годовой портфель и связать все направления.', order_index: 12, status: 'not_started', progress: 0, artifact_count: 0, evidence_count: 0, market_rate: '600000' },
@@ -304,8 +304,8 @@ export const templateContents: Record<string, string> = {
 
 ## Применение
 - AI-услуги:
-- LinkMAX:
-- Academy:
+- Проект 1:
+- Проект 2:
 
 ## Часы: __ / 15
 

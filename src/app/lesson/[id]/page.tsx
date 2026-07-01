@@ -528,7 +528,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
             </div>
             <div>
               <Label>Где применено</Label>
-              <Input value={evidenceForm.where_applied} onChange={e => setEvidenceForm(f => ({ ...f, where_applied: e.target.value }))} placeholder="AI-услуги / LinkMAX / Academy" />
+              <Input value={evidenceForm.where_applied} onChange={e => setEvidenceForm(f => ({ ...f, where_applied: e.target.value }))} placeholder="AI-услуги / Проект / Обучение" />
             </div>
             <div>
               <Label>Метрика <span className="text-red-400">*</span></Label>
