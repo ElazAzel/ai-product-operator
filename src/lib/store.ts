@@ -332,13 +332,25 @@ export const useStore = create<AppState>((set, get) => ({
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const data = JSON.parse(stored);
+        const mergedLessons = seedLessons.map(seed => {
+          const stored = data.lessons?.find((l: { id: string }) => l.id === seed.id);
+          return stored ? { ...seed, ...stored } : seed;
+        });
+        const mergedModules = seedModules.map(seed => {
+          const stored = data.modules?.find((m: { id: string }) => m.id === seed.id);
+          return stored ? { ...seed, ...stored } : seed;
+        });
+        const mergedSkills = defaultSkills.map(seed => {
+          const stored = data.skills?.find((s: { id: string }) => s.id === seed.id);
+          return stored ? { ...seed, ...stored } : seed;
+        });
         set({
-          user: data.user || defaultUser,
-          modules: data.modules || seedModules,
-          lessons: data.lessons || seedLessons,
+          user: data.user ? { ...defaultUser, ...data.user } : defaultUser,
+          modules: data.modules ? mergedModules : seedModules,
+          lessons: data.lessons ? mergedLessons : seedLessons,
           evidenceCards: data.evidenceCards || [],
           artifacts: data.artifacts || [],
-          skills: data.skills || defaultSkills,
+          skills: data.skills ? mergedSkills : defaultSkills,
           weeklyPlans: data.weeklyPlans || [],
           reviews: data.reviews || [],
           incomeEntries: data.incomeEntries || [],

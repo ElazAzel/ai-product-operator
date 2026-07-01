@@ -119,7 +119,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
       lesson_id: lesson.id,
       module_id: lesson.module_id,
       date: new Date().toISOString().split('T')[0],
-      direction: lesson.application_area[0] || 'ai-services',
+      direction: lesson.application_area?.[0] || 'ai-services',
       ...evidenceForm,
       case_potential: evidenceForm.case_potential,
       status: 'draft',
@@ -146,7 +146,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
       lesson_id: lesson.id,
       title: artifactForm.title,
       type: artifactForm.type,
-      direction: lesson.application_area[0] || 'ai-services',
+      direction: lesson.application_area?.[0] || 'ai-services',
       description: artifactForm.description,
       url: artifactForm.url,
       status: 'draft',
@@ -178,9 +178,9 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
   };
 
   const checklistItems = [
-    { key: 'criteria_1' as keyof CompletionChecklist, label: lesson.criteria_questions[0] || 'Критерий 1' },
-    { key: 'criteria_2' as keyof CompletionChecklist, label: lesson.criteria_questions[1] || 'Критерий 2' },
-    { key: 'criteria_3' as keyof CompletionChecklist, label: lesson.criteria_questions[2] || 'Критерий 3' },
+    { key: 'criteria_1' as keyof CompletionChecklist, label: lesson.criteria_questions?.[0] || 'Критерий 1' },
+    { key: 'criteria_2' as keyof CompletionChecklist, label: lesson.criteria_questions?.[1] || 'Критерий 2' },
+    { key: 'criteria_3' as keyof CompletionChecklist, label: lesson.criteria_questions?.[2] || 'Критерий 3' },
     { key: 'artifact_added' as keyof CompletionChecklist, label: 'Артефакт добавлен' },
     { key: 'evidence_card_filled' as keyof CompletionChecklist, label: 'Evidence Card заполнена' },
   ];

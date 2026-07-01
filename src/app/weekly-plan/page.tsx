@@ -94,7 +94,7 @@ ${plan.weekly_reflection}`;
       lesson_id: null,
       module_id: null,
       date: new Date().toISOString().split('T')[0],
-      direction: plan.application_area[0] || 'ai-services',
+      direction: plan.application_area?.[0] || 'ai-services',
       what_done: `Недельный план: ${plan.focus}. Артефакт: ${plan.artifact_goal}`,
       artifact: plan.artifact_goal,
       artifact_url: '',
