@@ -10,26 +10,28 @@ import { Button } from '@/components/ui/button';
 import { getDirectionLabel, getDirectionColor, formatCurrency } from '@/lib/utils';
 import {
   ArrowRight, BookOpen, Database, Package, Target, TrendingUp,
-  Clock, CheckCircle2, AlertCircle, Zap, DollarSign
+  Clock, CheckCircle2, AlertCircle, Zap, DollarSign, Sparkles
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const {
     modules, lessons, evidenceCards, artifacts, skills,
     user, getCourseProgress, getDirectionProgress,
-    getWeeklyHoursPlanned, getWeeklyHoursActual
+    getWeeklyHoursPlanned, getWeeklyHoursActual,
+    getTotalIncome
   } = useStore();
 
   const courseProgress = getCourseProgress();
   const aiServicesProgress = getDirectionProgress('ai-services');
-  const linkmaxProgress = getDirectionProgress('linkmax');
-  const academyProgress = getDirectionProgress('academy');
+  const aiProductsProgress = getDirectionProgress('ai-products');
+  const aiTeachingProgress = getDirectionProgress('ai-teaching');
 
   const currentModule = modules.find(m => m.status === 'in_progress') || modules.find(m => m.status === 'not_started');
   const currentLesson = lessons.find(l => l.status === 'in_progress') || (currentModule ? lessons.find(l => l.module_id === currentModule.id && l.status !== 'completed') : null);
 
   const weeklyPlanned = getWeeklyHoursPlanned();
   const weeklyActual = getWeeklyHoursActual();
+  const totalIncome = getTotalIncome();
 
   const completedLessons = lessons.filter(l => l.status === 'completed').length;
   const totalLessons = lessons.length;
@@ -83,8 +85,8 @@ export default function DashboardPage() {
             </div>
             <div className="text-right">
               <div className="text-sm text-zinc-400">Текущий доход</div>
-              <div className="text-xl font-bold text-emerald-400">0 ₸</div>
-              <div className="text-xs text-zinc-500 mt-1">Начни с первого урока</div>
+              <div className="text-xl font-bold text-emerald-400">{formatCurrency(totalIncome)}</div>
+              <Progress value={user.income_goal > 0 ? Math.min(100, (totalIncome / user.income_goal) * 100) : 0} className="w-full sm:w-48 mt-2" />
             </div>
           </div>
         </CardContent>
@@ -143,7 +145,7 @@ export default function DashboardPage() {
       <div>
         <h2 className="text-lg font-semibold mb-4">Прогресс по направлениям</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {(['ai-services', 'linkmax', 'academy'] as const).map((dir) => {
+          {(['ai-services', 'ai-products', 'ai-teaching'] as const).map((dir) => {
             const progress = getDirectionProgress(dir);
             return (
               <Card key={dir}>
@@ -161,6 +163,36 @@ export default function DashboardPage() {
           })}
         </div>
       </div>
+
+      {/* Cross-Cutting Practices */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles className="h-5 w-5 text-accent" />
+            Сквозные практики
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
+              <div className="text-sm font-semibold text-accent mb-1">AI-Radar</div>
+              <p className="text-xs text-zinc-400">15–20 мин/нед: 1–2 источника + вывод «что реально меняет мою работу»</p>
+            </div>
+            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
+              <div className="text-sm font-semibold text-cyan-400 mb-1">Evals-мышление</div>
+              <p className="text-xs text-zinc-400">3–5 эталонных кейсов и критерий «сработало / нет» до масштабирования</p>
+            </div>
+            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
+              <div className="text-sm font-semibold text-amber-400 mb-1">Ментальные модели</div>
+              <p className="text-xs text-zinc-400">Токены, контекст, галлюцинации, reasoning — что не меняется от версии к версии</p>
+            </div>
+            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
+              <div className="text-sm font-semibold text-emerald-400 mb-1">Этика и раскрытие</div>
+              <p className="text-xs text-zinc-400">Честность о AI в работе, аккуратность с данными, проверка правил</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Current Module & Next Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

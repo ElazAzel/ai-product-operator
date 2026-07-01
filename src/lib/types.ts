@@ -1,4 +1,4 @@
-export type Direction = 'ai-services' | 'linkmax' | 'academy' | 'skill';
+export type Direction = 'ai-services' | 'ai-products' | 'ai-teaching' | 'skill';
 export type ModuleStatus = 'not_started' | 'in_progress' | 'completed';
 export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
 export type EvidenceStatus = 'draft' | 'validated' | 'case-ready';
@@ -29,6 +29,7 @@ export interface Module {
   progress: number;
   artifact_count: number;
   evidence_count: number;
+  market_rate: string;
 }
 
 export interface Lesson {
@@ -41,6 +42,12 @@ export interface Lesson {
   artifact_requirement: string;
   homework: string;
   metric: string;
+  money_connection: string;
+  eval_prompt: string;
+  criteria_questions: string[];
+  template_url: string;
+  estimated_minutes: number;
+  external_links: string[];
   application_area: Direction[];
   done_criteria: string;
   order_index: number;
@@ -85,12 +92,14 @@ export interface Skill {
   id: string;
   user_id: string;
   name: string;
+  description: string;
   score: number;
   confidence: number;
   last_artifact: string;
   main_gap: string;
   next_step: string;
   direction: Direction;
+  market_rate_range: { min: number; max: number };
   updated_at: string;
 }
 
@@ -140,11 +149,22 @@ export interface Offer {
   created_at: string;
 }
 
+export interface IncomeEntry {
+  id: string;
+  user_id: string;
+  date: string;
+  direction: Direction;
+  amount: number;
+  description: string;
+  source: string;
+  hours_spent: number;
+  created_at: string;
+}
+
 export interface CompletionChecklist {
-  practice_done: boolean;
+  criteria_1: boolean;
+  criteria_2: boolean;
+  criteria_3: boolean;
   artifact_added: boolean;
-  metric_specified: boolean;
   evidence_card_filled: boolean;
-  application_selected: boolean;
-  money_connection_written: boolean;
 }

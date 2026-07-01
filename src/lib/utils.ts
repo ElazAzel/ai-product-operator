@@ -13,8 +13,8 @@ export function generateId(): string {
 export function getDirectionLabel(direction: Direction): string {
   const labels: Record<Direction, string> = {
     'ai-services': 'AI-услуги',
-    'linkmax': 'LinkMAX',
-    'academy': 'Academy',
+    'ai-products': 'AI-продукты',
+    'ai-teaching': 'AI-обучение',
     'skill': 'Навык',
   };
   return labels[direction];
@@ -23,8 +23,8 @@ export function getDirectionLabel(direction: Direction): string {
 export function getDirectionColor(direction: Direction): string {
   const colors: Record<Direction, string> = {
     'ai-services': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    'linkmax': 'bg-accent-subtle text-accent border-accent/20',
-    'academy': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    'ai-products': 'bg-accent-subtle text-accent border-accent/20',
+    'ai-teaching': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     'skill': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
   };
   return colors[direction];

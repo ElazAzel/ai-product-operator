@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { User, Module, Lesson, EvidenceCard, Artifact, Skill, WeeklyPlan, Review, Direction, LessonStatus, CompletionChecklist } from './types';
+import { User, Module, Lesson, EvidenceCard, Artifact, Skill, WeeklyPlan, Review, Direction, LessonStatus, CompletionChecklist, IncomeEntry } from './types';
 import { defaultUser, seedModules, seedLessons, defaultSkills } from './seed-data';
 import { generateId, calculateModuleProgress } from './utils';
 
@@ -14,10 +14,10 @@ interface AppState {
   skills: Skill[];
   weeklyPlans: WeeklyPlan[];
   reviews: Review[];
+  incomeEntries: IncomeEntry[];
   currentLessonId: string | null;
   sidebarOpen: boolean;
   lessonChecklists: Record<string, CompletionChecklist>;
-  lessonMoneyConnections: Record<string, string>;
 
   updateUser: (updates: Partial<User>) => void;
   updateModule: (id: string, updates: Partial<Module>) => void;
@@ -41,12 +41,13 @@ interface AppState {
 
   addReview: (review: Omit<Review, 'id' | 'created_at'>) => void;
 
+  addIncomeEntry: (entry: Omit<IncomeEntry, 'id' | 'created_at'>) => void;
+  deleteIncomeEntry: (id: string) => void;
+
   toggleSidebar: () => void;
 
   setLessonChecklist: (lessonId: string, checklist: CompletionChecklist) => void;
-  setLessonMoneyConnection: (lessonId: string, text: string) => void;
   getLessonChecklist: (lessonId: string) => CompletionChecklist;
-  getLessonMoneyConnection: (lessonId: string) => string;
 
   canCompleteLesson: (lessonId: string) => { canComplete: boolean; missing: string[] };
 
@@ -55,6 +56,8 @@ interface AppState {
   getWeeklyHoursPlanned: () => number;
   getWeeklyHoursActual: () => number;
   getFirstIncompleteLesson: (moduleId: string) => Lesson | null;
+  getTotalIncome: () => number;
+  getIncomeByDirection: (direction: Direction) => number;
 
   loadFromStorage: () => void;
   saveToStorage: () => void;
@@ -64,12 +67,11 @@ interface AppState {
 const STORAGE_KEY = 'ai-product-operator';
 
 const defaultChecklist: CompletionChecklist = {
-  practice_done: false,
+  criteria_1: false,
+  criteria_2: false,
+  criteria_3: false,
   artifact_added: false,
-  metric_specified: false,
   evidence_card_filled: false,
-  application_selected: false,
-  money_connection_written: false,
 };
 
 export const useStore = create<AppState>((set, get) => ({
@@ -81,10 +83,10 @@ export const useStore = create<AppState>((set, get) => ({
   skills: defaultSkills,
   weeklyPlans: [],
   reviews: [],
+  incomeEntries: [],
   currentLessonId: null,
   sidebarOpen: true,
   lessonChecklists: {},
-  lessonMoneyConnections: {},
 
   updateUser: (updates) => set((state) => {
     const newUser = { ...state.user, ...updates };
@@ -233,6 +235,21 @@ export const useStore = create<AppState>((set, get) => ({
     return { reviews: [...state.reviews, newReview] };
   }),
 
+  addIncomeEntry: (entry) => set((state) => {
+    const newEntry: IncomeEntry = {
+      ...entry,
+      id: generateId(),
+      created_at: new Date().toISOString(),
+    };
+    setTimeout(() => get().saveToStorage(), 0);
+    return { incomeEntries: [...state.incomeEntries, newEntry] };
+  }),
+
+  deleteIncomeEntry: (id) => set((state) => {
+    setTimeout(() => get().saveToStorage(), 0);
+    return { incomeEntries: state.incomeEntries.filter(e => e.id !== id) };
+  }),
+
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
   setLessonChecklist: (lessonId, checklist) => set((state) => {
@@ -241,29 +258,19 @@ export const useStore = create<AppState>((set, get) => ({
     return { lessonChecklists: newChecklists };
   }),
 
-  setLessonMoneyConnection: (lessonId, text) => set((state) => {
-    const newConnections = { ...state.lessonMoneyConnections, [lessonId]: text };
-    setTimeout(() => get().saveToStorage(), 0);
-    return { lessonMoneyConnections: newConnections };
-  }),
-
   getLessonChecklist: (lessonId) => {
     return get().lessonChecklists[lessonId] || { ...defaultChecklist };
   },
 
-  getLessonMoneyConnection: (lessonId) => {
-    return get().lessonMoneyConnections[lessonId] || '';
-  },
-
   canCompleteLesson: (lessonId) => {
     const checklist = get().lessonChecklists[lessonId] || defaultChecklist;
+    const lesson = get().lessons.find(l => l.id === lessonId);
     const missing: string[] = [];
-    if (!checklist.practice_done) missing.push('Практика выполнена');
+    if (!checklist.criteria_1) missing.push(lesson?.criteria_questions[0] || 'Критерий 1');
+    if (!checklist.criteria_2) missing.push(lesson?.criteria_questions[1] || 'Критерий 2');
+    if (!checklist.criteria_3) missing.push(lesson?.criteria_questions[2] || 'Критерий 3');
     if (!checklist.artifact_added) missing.push('Артефакт добавлен');
-    if (!checklist.metric_specified) missing.push('Метрика указана');
     if (!checklist.evidence_card_filled) missing.push('Evidence Card заполнена');
-    if (!checklist.application_selected) missing.push('Применение выбрано');
-    if (!checklist.money_connection_written) missing.push('Вывод по деньгам / продукту / кейсу');
     return { canComplete: missing.length === 0, missing };
   },
 
@@ -311,6 +318,14 @@ export const useStore = create<AppState>((set, get) => ({
     return lessons.find(l => l.status !== 'completed') || null;
   },
 
+  getTotalIncome: () => {
+    return get().incomeEntries.reduce((sum, e) => sum + e.amount, 0);
+  },
+
+  getIncomeByDirection: (direction) => {
+    return get().incomeEntries.filter(e => e.direction === direction).reduce((sum, e) => sum + e.amount, 0);
+  },
+
   loadFromStorage: () => {
     if (typeof window === 'undefined') return;
     try {
@@ -326,8 +341,8 @@ export const useStore = create<AppState>((set, get) => ({
           skills: data.skills || defaultSkills,
           weeklyPlans: data.weeklyPlans || [],
           reviews: data.reviews || [],
+          incomeEntries: data.incomeEntries || [],
           lessonChecklists: data.lessonChecklists || {},
-          lessonMoneyConnections: data.lessonMoneyConnections || {},
         });
       }
     } catch (e) {
@@ -348,8 +363,8 @@ export const useStore = create<AppState>((set, get) => ({
         skills: state.skills,
         weeklyPlans: state.weeklyPlans,
         reviews: state.reviews,
+        incomeEntries: state.incomeEntries,
         lessonChecklists: state.lessonChecklists,
-        lessonMoneyConnections: state.lessonMoneyConnections,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
@@ -367,8 +382,8 @@ export const useStore = create<AppState>((set, get) => ({
       skills: defaultSkills,
       weeklyPlans: [],
       reviews: [],
+      incomeEntries: [],
       lessonChecklists: {},
-      lessonMoneyConnections: {},
     });
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY);

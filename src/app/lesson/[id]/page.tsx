@@ -17,11 +17,12 @@ import {
   DialogDescription, DialogFooter
 } from '@/components/ui/dialog';
 import { getDirectionLabel, getDirectionColor, getStatusLabel, getStatusColor } from '@/lib/utils';
-import { ArtifactType } from '@/lib/types';
+import { ArtifactType, CompletionChecklist } from '@/lib/types';
 import {
   BookOpen, Target, Lightbulb, Wrench, Package, ClipboardCheck,
   BarChart3, MapPin, CheckCircle2, ArrowRight, ArrowLeft,
-  AlertCircle, Lock, Plus, FileText, Star, X, Circle
+  AlertCircle, Lock, Plus, FileText, Star, X, Circle, Sparkles, Clock,
+  ExternalLink, FileCode, DollarSign
 } from 'lucide-react';
 
 export default function LessonPage({ params }: { params: Promise<{ id: string }> }) {
@@ -32,12 +33,12 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
     completeLesson, startLesson, addEvidenceCard, addArtifact,
     setCurrentLesson, canCompleteLesson,
     getLessonChecklist, setLessonChecklist,
-    getLessonMoneyConnection, setLessonMoneyConnection
   } = useStore();
 
   const lesson = lessons.find(l => l.id === id);
   const module = lesson ? modules.find(m => m.id === lesson.module_id) : null;
 
+  const [showEvalPrompt, setShowEvalPrompt] = useState(false);
   const [showEvidenceDialog, setShowEvidenceDialog] = useState(false);
   const [showArtifactDialog, setShowArtifactDialog] = useState(false);
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
@@ -58,10 +59,9 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
   const [artifactErrors, setArtifactErrors] = useState<Record<string, boolean>>({});
 
   const checklist = lesson ? getLessonChecklist(lesson.id) : {
-    practice_done: false, artifact_added: false, metric_specified: false,
-    evidence_card_filled: false, application_selected: false, money_connection_written: false,
+    criteria_1: false, criteria_2: false, criteria_3: false,
+    artifact_added: false, evidence_card_filled: false,
   };
-  const moneyConnection = lesson ? getLessonMoneyConnection(lesson.id) : '';
 
   useEffect(() => {
     if (lesson) {
@@ -100,7 +100,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
   const prevLesson = currentLessonIdx > 0 ? allLessonsInModule[currentLessonIdx - 1] : null;
   const nextLesson = currentLessonIdx < allLessonsInModule.length - 1 ? allLessonsInModule[currentLessonIdx + 1] : null;
 
-  const handleChecklistChange = (key: keyof typeof checklist, value: boolean) => {
+  const handleChecklistChange = (key: keyof CompletionChecklist, value: boolean) => {
     if (!lesson) return;
     setLessonChecklist(lesson.id, { ...checklist, [key]: value });
   };
@@ -119,7 +119,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
       lesson_id: lesson.id,
       module_id: lesson.module_id,
       date: new Date().toISOString().split('T')[0],
-      direction: lesson.application_area[0] || 'skill',
+      direction: lesson.application_area[0] || 'ai-services',
       ...evidenceForm,
       case_potential: evidenceForm.case_potential,
       status: 'draft',
@@ -146,7 +146,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
       lesson_id: lesson.id,
       title: artifactForm.title,
       type: artifactForm.type,
-      direction: lesson.application_area[0] || 'skill',
+      direction: lesson.application_area[0] || 'ai-services',
       description: artifactForm.description,
       url: artifactForm.url,
       status: 'draft',
@@ -177,7 +177,15 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
     }
   };
 
-  const completionPercentage = Object.values(checklist).filter(Boolean).length / 6 * 100;
+  const checklistItems = [
+    { key: 'criteria_1' as keyof CompletionChecklist, label: lesson.criteria_questions[0] || 'Критерий 1' },
+    { key: 'criteria_2' as keyof CompletionChecklist, label: lesson.criteria_questions[1] || 'Критерий 2' },
+    { key: 'criteria_3' as keyof CompletionChecklist, label: lesson.criteria_questions[2] || 'Критерий 3' },
+    { key: 'artifact_added' as keyof CompletionChecklist, label: 'Артефакт добавлен' },
+    { key: 'evidence_card_filled' as keyof CompletionChecklist, label: 'Evidence Card заполнена' },
+  ];
+
+  const completionPercentage = (Object.values(checklist).filter(Boolean).length / 5) * 100;
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl">
@@ -194,6 +202,12 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
       <div>
         <div className="flex items-center gap-3 mb-3 flex-wrap">
           <Badge variant="outline">Модуль {module.order_index}</Badge>
+          {lesson.estimated_minutes && (
+            <Badge variant="outline" className="text-zinc-400">
+              <Clock className="h-3 w-3 mr-1" />
+              {lesson.estimated_minutes} мин
+            </Badge>
+          )}
           <Badge className={getStatusColor(lesson.status)}>
             {getStatusLabel(lesson.status)}
           </Badge>
@@ -217,7 +231,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
           <Progress value={completionPercentage} />
           {completionPercentage < 100 && lesson.status !== 'completed' && (
             <p className="text-xs text-zinc-500 mt-2">
-              Урок нельзя закрыть без доказательства. Заполни все пункты ниже.
+              Урок нельзя закрыть без доказательства. Отметь все пункты ниже.
             </p>
           )}
         </CardContent>
@@ -276,6 +290,28 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
               <p className="text-sm text-zinc-300">{lesson.homework}</p>
             </CardContent>
           </Card>
+
+          {/* Eval Prompt Section */}
+          {lesson.eval_prompt && (
+            <Card>
+              <CardHeader className="cursor-pointer" onClick={() => setShowEvalPrompt(!showEvalPrompt)}>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <FileCode className="h-5 w-5 text-violet-500" />
+                  Eval Prompt (самопроверка)
+                  <Badge variant="outline" className="ml-auto text-xs">
+                    {showEvalPrompt ? 'Скрыть' : 'Показать'}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              {showEvalPrompt && (
+                <CardContent>
+                  <div className="text-sm text-zinc-300 whitespace-pre-line leading-relaxed bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 font-mono text-xs">
+                    {lesson.eval_prompt}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          )}
         </div>
 
         {/* Right: Sidebar */}
@@ -322,6 +358,59 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
             </CardContent>
           </Card>
 
+          {/* Money Connection */}
+          {lesson.money_connection && (
+            <Card className="border-emerald-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <DollarSign className="h-5 w-5 text-emerald-500" />
+                  Связь с деньгами
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-zinc-300">{lesson.money_connection}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Template URL */}
+          {lesson.template_url && (
+            <Link href={`/templates?template=${lesson.template_url}`}>
+              <Button variant="outline" className="w-full">
+                <FileText className="h-4 w-4 mr-2" />
+                Открыть шаблон
+              </Button>
+            </Link>
+          )}
+
+          {/* External Links */}
+          {lesson.external_links && lesson.external_links.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <ExternalLink className="h-5 w-5 text-blue-500" />
+                  Дополнительные материалы
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {lesson.external_links.map((link, idx) => (
+                    <a
+                      key={idx}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{link}</span>
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Separator />
 
           {/* Action Buttons */}
@@ -337,17 +426,11 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
               {/* Checklist */}
               <div className="space-y-2.5 pt-2">
                 <Label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Чек-лист завершения</Label>
-                {([
-                  { key: 'practice_done' as const, label: 'Практика выполнена' },
-                  { key: 'artifact_added' as const, label: 'Артефакт добавлен' },
-                  { key: 'metric_specified' as const, label: 'Метрика указана' },
-                  { key: 'evidence_card_filled' as const, label: 'Evidence Card заполнена' },
-                  { key: 'application_selected' as const, label: 'Применение выбрано' },
-                  { key: 'money_connection_written' as const, label: 'Вывод по деньгам' },
-                ]).map((item) => (
+                {checklistItems.map((item) => (
                   <label
                     key={item.key}
                     className="flex items-center gap-2.5 text-sm cursor-pointer group"
+                    onClick={() => handleChecklistChange(item.key, !checklist[item.key])}
                   >
                     <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                       checklist[item.key]
@@ -362,22 +445,6 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
                   </label>
                 ))}
               </div>
-
-              {/* Money Connection */}
-              {checklist.money_connection_written && (
-                <div className="pt-2">
-                  <Label className="text-xs font-medium text-zinc-400">
-                    Как это приближает к деньгам / продукту / кейсу?
-                  </Label>
-                  <Textarea
-                    value={moneyConnection}
-                    onChange={(e) => setLessonMoneyConnection(lesson.id, e.target.value)}
-                    placeholder="Например: этот навык напрямую связан с AI-аудитом за 100k ₸..."
-                    className="mt-1.5"
-                    rows={3}
-                  />
-                </div>
-              )}
 
               <Button
                 className="w-full mt-2"

@@ -94,7 +94,7 @@ ${plan.weekly_reflection}`;
       lesson_id: null,
       module_id: null,
       date: new Date().toISOString().split('T')[0],
-      direction: plan.application_area[0] || 'skill',
+      direction: plan.application_area[0] || 'ai-services',
       what_done: `Недельный план: ${plan.focus}. Артефакт: ${plan.artifact_goal}`,
       artifact: plan.artifact_goal,
       artifact_url: '',
@@ -290,7 +290,7 @@ ${plan.weekly_reflection}`;
             <div>
               <Label>Применение</Label>
               <div className="flex flex-wrap gap-2 mt-1">
-                {(['ai-services', 'linkmax', 'academy'] as const).map(d => (
+                {(['ai-services', 'ai-products', 'ai-teaching'] as const).map(d => (
                   <Button
                     key={d}
                     variant={form.application_area.includes(d) ? 'default' : 'outline'}

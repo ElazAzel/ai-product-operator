@@ -51,8 +51,8 @@ export default function EvidenceVaultPage() {
   const stats = {
     total: evidenceCards.length,
     aiServices: evidenceCards.filter(c => c.direction === 'ai-services').length,
-    linkmax: evidenceCards.filter(c => c.direction === 'linkmax').length,
-    academy: evidenceCards.filter(c => c.direction === 'academy').length,
+    aiProducts: evidenceCards.filter(c => c.direction === 'ai-products').length,
+    aiTeaching: evidenceCards.filter(c => c.direction === 'ai-teaching').length,
     caseReady: evidenceCards.filter(c => c.status === 'case-ready').length,
   };
 
@@ -183,12 +183,12 @@ export default function EvidenceVaultPage() {
           <div className="text-xs text-zinc-500">AI-услуги</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-accent">{stats.linkmax}</div>
-          <div className="text-xs text-zinc-500">LinkMAX</div>
+          <div className="text-2xl font-bold text-accent">{stats.aiProducts}</div>
+          <div className="text-xs text-zinc-500">AI-продукты</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-emerald-400">{stats.academy}</div>
-          <div className="text-xs text-zinc-500">Academy</div>
+          <div className="text-2xl font-bold text-emerald-400">{stats.aiTeaching}</div>
+          <div className="text-xs text-zinc-500">AI-обучение</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
           <div className="text-2xl font-bold text-amber-400">{stats.caseReady}</div>
@@ -203,7 +203,7 @@ export default function EvidenceVaultPage() {
           <Input placeholder="Поиск..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <div className="flex gap-2">
-          {(['all', 'ai-services', 'linkmax', 'academy'] as const).map(d => (
+          {(['all', 'ai-services', 'ai-products', 'ai-teaching'] as const).map(d => (
             <Button key={d} variant={filterDirection === d ? 'default' : 'outline'} size="sm"
               onClick={() => setFilterDirection(d)}>
               {d === 'all' ? 'Все' : getDirectionLabel(d)}
@@ -302,7 +302,7 @@ export default function EvidenceVaultPage() {
               <div>
                 <Label>Направление</Label>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {(['ai-services', 'linkmax', 'academy', 'skill'] as const).map(d => (
+                  {(['ai-services', 'ai-products', 'ai-teaching'] as const).map(d => (
                     <Button key={d} variant={form.direction === d ? 'default' : 'outline'} size="sm"
                       onClick={() => setForm(f => ({ ...f, direction: d }))}>
                       {getDirectionLabel(d)}

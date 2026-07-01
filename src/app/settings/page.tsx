@@ -126,7 +126,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3 sm:flex-row">
-            {(['ai-services', 'linkmax', 'academy'] as const).map(dir => (
+            {(['ai-services', 'ai-products', 'ai-teaching'] as const).map(dir => (
               <Button
                 key={dir}
                 variant={directions.includes(dir) ? 'default' : 'outline'}

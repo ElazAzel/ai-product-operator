@@ -1,19 +1,28 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { formatCurrency } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from '@/components/ui/dialog';
+import { formatCurrency, getDirectionLabel, getDirectionColor } from '@/lib/utils';
+import { Direction } from '@/lib/types';
 import {
   DollarSign, TrendingUp, Target, Briefcase, Users, FileText,
-  ArrowRight, Zap
+  ArrowRight, Zap, Plus, Trash2
 } from 'lucide-react';
 
 export default function MoneyMapPage() {
-  const { user, modules, lessons, evidenceCards, artifacts } = useStore();
+  const { user, modules, lessons, evidenceCards, artifacts, incomeEntries, addIncomeEntry, deleteIncomeEntry, getTotalIncome, getIncomeByDirection } = useStore();
+  const [showDialog, setShowDialog] = useState(false);
+  const [newEntry, setNewEntry] = useState({ amount: 0, source: '', description: '', direction: 'ai-services' as Direction, date: new Date().toISOString().split('T')[0], hours_spent: 0 });
 
   const revenueStreams = [
     {
@@ -47,8 +56,8 @@ export default function MoneyMapPage() {
       color: 'text-emerald-500',
     },
     {
-      title: 'LinkMAX AI-функции',
-      description: 'AI Page Builder, Copy Assistant, Mini-RAG',
+      title: 'AI-продукты',
+      description: 'Свои AI-функции, Page Builder, micro-SaaS',
       price: 'Product revenue',
       status: 'available',
       module: 6,
@@ -57,8 +66,8 @@ export default function MoneyMapPage() {
       color: 'text-amber-500',
     },
     {
-      title: 'AI Strategic Academy',
-      description: 'Модули, воркшопы, корпоративное обучение',
+      title: 'AI-обучение',
+      description: 'Курсы, воркшопы, контент, менторство',
       price: '200k–1M+ ₸',
       status: 'available',
       module: 11,
@@ -72,6 +81,16 @@ export default function MoneyMapPage() {
     evidenceCards.some(e => e.lesson_id === l.id) ||
     artifacts.some(a => a.lesson_id === l.id)
   );
+
+  const totalIncome = getTotalIncome();
+  const incomeProgress = user.income_goal > 0 ? Math.min(100, Math.round((totalIncome / user.income_goal) * 100)) : 0;
+
+  const handleAddIncome = () => {
+    if (newEntry.amount <= 0) return;
+    addIncomeEntry({ ...newEntry, user_id: 'user-1' });
+    setShowDialog(false);
+    setNewEntry({ amount: 0, source: '', description: '', direction: 'ai-services', date: new Date().toISOString().split('T')[0], hours_spent: 0 });
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -95,10 +114,72 @@ export default function MoneyMapPage() {
             </div>
             <div className="text-left sm:text-right">
               <div className="text-sm text-zinc-400 mb-1">Текущий доход от AI</div>
-              <div className="text-xl font-bold text-emerald-400 md:text-2xl">0 ₸</div>
-              <Progress value={0} className="w-full sm:w-48 mt-2" />
+              <div className="text-xl font-bold text-emerald-400 md:text-2xl">{formatCurrency(totalIncome)}</div>
+              <Progress value={incomeProgress} className="w-full sm:w-48 mt-2" />
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Income by Direction */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {(['ai-services', 'ai-products', 'ai-teaching'] as const).map(dir => {
+          const dirIncome = getIncomeByDirection(dir);
+          return (
+            <Card key={dir}>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge className={getDirectionColor(dir)}>{getDirectionLabel(dir)}</Badge>
+                  <span className="text-lg font-bold text-emerald-400">{formatCurrency(dirIncome)}</span>
+                </div>
+                <Progress value={user.income_goal > 0 ? Math.min(100, (dirIncome / user.income_goal) * 100) : 0} />
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Income Entries */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-emerald-500" />
+              Доходы
+            </CardTitle>
+            <Button size="sm" onClick={() => setShowDialog(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Добавить доход
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {incomeEntries.length === 0 ? (
+            <p className="text-sm text-zinc-500 text-center py-6">
+              Ещё нет записей о доходе. Добавь первый заработанный тенге.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {[...incomeEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(entry => (
+                <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
+                  <div className="flex items-center gap-3">
+                    <Badge className={getDirectionColor(entry.direction)}>
+                      {getDirectionLabel(entry.direction)}
+                    </Badge>
+                    <div>
+                      <p className="text-sm font-medium">{entry.source}</p>
+                      <p className="text-xs text-zinc-500">{entry.date}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-emerald-400">{formatCurrency(entry.amount)}</span>
+                    <Button variant="ghost" size="sm" onClick={() => deleteIncomeEntry(entry.id)}>
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -192,6 +273,52 @@ export default function MoneyMapPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Income Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Добавить доход</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Сумма (₸)</Label>
+              <Input type="number" value={newEntry.amount || ''} onChange={e => setNewEntry(f => ({ ...f, amount: +e.target.value }))} placeholder="100000" />
+            </div>
+            <div>
+              <Label>Источник</Label>
+              <Input value={newEntry.source} onChange={e => setNewEntry(f => ({ ...f, source: e.target.value }))} placeholder="AI-аудит для компании X" />
+            </div>
+            <div>
+              <Label>Описание</Label>
+              <Input value={newEntry.description} onChange={e => setNewEntry(f => ({ ...f, description: e.target.value }))} placeholder="Подробности" />
+            </div>
+            <div>
+              <Label>Затрачено часов</Label>
+              <Input type="number" value={newEntry.hours_spent || ''} onChange={e => setNewEntry(f => ({ ...f, hours_spent: +e.target.value }))} placeholder="10" />
+            </div>
+            <div>
+              <Label>Направление</Label>
+              <div className="flex gap-2 mt-1">
+                {(['ai-services', 'ai-products', 'ai-teaching'] as const).map(d => (
+                  <Button key={d} variant={newEntry.direction === d ? 'default' : 'outline'} size="sm"
+                    onClick={() => setNewEntry(f => ({ ...f, direction: d }))}>
+                    {getDirectionLabel(d)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Дата</Label>
+              <Input type="date" value={newEntry.date} onChange={e => setNewEntry(f => ({ ...f, date: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>Отмена</Button>
+            <Button onClick={handleAddIncome}>Добавить</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="text-center py-4">
         <p className="text-sm text-zinc-500 italic">

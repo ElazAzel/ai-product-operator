@@ -94,7 +94,7 @@ export default function ArtifactsPage() {
           <Input placeholder="Поиск..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <div className="flex gap-2 flex-wrap">
-          {(['all', 'ai-services', 'linkmax', 'academy'] as const).map(d => (
+          {(['all', 'ai-services', 'ai-products', 'ai-teaching'] as const).map(d => (
             <Button key={d} variant={filterDirection === d ? 'default' : 'outline'} size="sm"
               onClick={() => setFilterDirection(d)}>
               {d === 'all' ? 'Все' : getDirectionLabel(d)}
@@ -182,7 +182,7 @@ export default function ArtifactsPage() {
             <div>
               <Label>Направление</Label>
               <div className="flex gap-2 mt-1">
-                {(['ai-services', 'linkmax', 'academy', 'skill'] as const).map(d => (
+                {(['ai-services', 'ai-products', 'ai-teaching'] as const).map(d => (
                   <Button key={d} variant={form.direction === d ? 'default' : 'outline'} size="sm"
                     onClick={() => setForm(f => ({ ...f, direction: d }))}>
                     {getDirectionLabel(d)}

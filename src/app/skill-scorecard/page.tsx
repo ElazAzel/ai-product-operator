@@ -135,11 +135,21 @@ export default function SkillScorecardPage() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div>
-                    <h3 className="font-semibold">{skill.name}</h3>
-                    <Badge className={`${getDirectionColor(skill.direction)} text-xs mt-1`}>
-                      {getDirectionLabel(skill.direction)}
-                    </Badge>
-                  </div>
+                        <h3 className="font-semibold">{skill.name}</h3>
+                        {skill.description && (
+                          <p className="text-xs text-zinc-500 mt-0.5">{skill.description}</p>
+                        )}
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          <Badge className={`${getDirectionColor(skill.direction)} text-xs`}>
+                            {getDirectionLabel(skill.direction)}
+                          </Badge>
+                          {skill.market_rate_range && (
+                            <Badge variant="outline" className="text-xs text-emerald-400">
+                              {skill.market_rate_range.min.toLocaleString()}–{skill.market_rate_range.max.toLocaleString()} ₸
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">

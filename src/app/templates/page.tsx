@@ -38,8 +38,8 @@ export default function TemplatesPage() {
   const categoryColors: Record<string, string> = {
     evidence: 'bg-accent-subtle text-accent',
     service: 'bg-blue-500/10 text-blue-500',
-    linkmax: 'bg-amber-500/10 text-amber-500',
-    academy: 'bg-emerald-500/10 text-emerald-500',
+    'ai-products': 'bg-amber-500/10 text-amber-500',
+    'ai-teaching': 'bg-emerald-500/10 text-emerald-500',
     planning: 'bg-cyan-500/10 text-cyan-500',
     technical: 'bg-pink-500/10 text-pink-500',
   };
