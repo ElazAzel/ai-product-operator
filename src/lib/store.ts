@@ -266,9 +266,9 @@ export const useStore = create<AppState>((set, get) => ({
     const checklist = get().lessonChecklists[lessonId] || defaultChecklist;
     const lesson = get().lessons.find(l => l.id === lessonId);
     const missing: string[] = [];
-    if (!checklist.criteria_1) missing.push(lesson?.criteria_questions[0] || 'Критерий 1');
-    if (!checklist.criteria_2) missing.push(lesson?.criteria_questions[1] || 'Критерий 2');
-    if (!checklist.criteria_3) missing.push(lesson?.criteria_questions[2] || 'Критерий 3');
+    if (!checklist.criteria_1) missing.push(lesson?.criteria_questions?.[0] || 'Критерий 1');
+    if (!checklist.criteria_2) missing.push(lesson?.criteria_questions?.[1] || 'Критерий 2');
+    if (!checklist.criteria_3) missing.push(lesson?.criteria_questions?.[2] || 'Критерий 3');
     if (!checklist.artifact_added) missing.push('Артефакт добавлен');
     if (!checklist.evidence_card_filled) missing.push('Evidence Card заполнена');
     return { canComplete: missing.length === 0, missing };
