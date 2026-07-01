@@ -8,7 +8,7 @@ CREATE TABLE users (
   role TEXT DEFAULT 'student' CHECK (role IN ('owner', 'student', 'mentor', 'admin')),
   income_goal BIGINT DEFAULT 1000000,
   weekly_hours_goal INT DEFAULT 15,
-  active_directions TEXT[] DEFAULT ARRAY['ai-services', 'linkmax', 'academy'],
+  active_directions TEXT[] DEFAULT ARRAY['ai-services', 'ai-products', 'ai-teaching'],
   theme TEXT DEFAULT 'dark' CHECK (theme IN ('light', 'dark')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -51,7 +51,7 @@ CREATE TABLE evidence_cards (
   lesson_id UUID REFERENCES lessons(id) ON DELETE SET NULL,
   module_id UUID REFERENCES modules(id) ON DELETE SET NULL,
   date DATE NOT NULL,
-  direction TEXT NOT NULL CHECK (direction IN ('ai-services', 'linkmax', 'academy', 'skill')),
+  direction TEXT NOT NULL CHECK (direction IN ('ai-services', 'ai-products', 'ai-teaching', 'skill')),
   what_done TEXT,
   artifact TEXT,
   artifact_url TEXT,
@@ -72,7 +72,7 @@ CREATE TABLE artifacts (
   lesson_id UUID REFERENCES lessons(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('prompt', 'workflow', 'offer', 'case', 'demo', 'report', 'automation', 'lesson', 'checklist', 'api-spec', 'rag-demo', 'agent-blueprint')),
-  direction TEXT NOT NULL CHECK (direction IN ('ai-services', 'linkmax', 'academy', 'skill')),
+  direction TEXT NOT NULL CHECK (direction IN ('ai-services', 'ai-products', 'ai-teaching', 'skill')),
   description TEXT,
   url TEXT,
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'tested', 'packaged', 'published')),
@@ -90,7 +90,7 @@ CREATE TABLE skills (
   last_artifact TEXT,
   main_gap TEXT,
   next_step TEXT,
-  direction TEXT CHECK (direction IN ('ai-services', 'linkmax', 'academy', 'skill')),
+  direction TEXT CHECK (direction IN ('ai-services', 'ai-products', 'ai-teaching', 'skill')),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -135,7 +135,7 @@ CREATE TABLE offers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
-  direction TEXT CHECK (direction IN ('ai-services', 'linkmax', 'academy')),
+  direction TEXT CHECK (direction IN ('ai-services', 'ai-products', 'ai-teaching')),
   price BIGINT,
   description TEXT,
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'paused')),

@@ -126,7 +126,7 @@ Open Design — AI-assisted дизайн-платформа с тремя осн
 | **Device frames** (`frames/iphone-15-pro.html` и т.д.) | Предпросмотр мобильной версии в браузере | При тестировании |
 | **Design system registry** (100+ систем) | Сменить тему на Linear, Notion, или кастомную | При rebranding |
 | **Prompt templates** (`prompt-templates/image/`) | Генерация изображений для артефактов | При добавлении AI-фич |
-| **html-ppt-course-module/** | Создание презентаций курса | При запуске Academy |
+| **html-ppt-course-module/** | Создание презентаций курса | При запуске обучающего продукта |
 | **Skills** (140+ stubs) | `shadcn-ui`, `color-expert`, `frontend-design` для дальнейшего улучшения | По необходимости |
 
 ---
