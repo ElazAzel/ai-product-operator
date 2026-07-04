@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getDirectionLabel, getDirectionColor, formatCurrency } from '@/lib/utils';
 import {
-  ArrowRight, BookOpen, Database, Package, Target, TrendingUp,
-  Clock, CheckCircle2, AlertCircle, Zap, DollarSign, Sparkles
+  ArrowRight, BookOpen, Database, Target,
+  Clock, CheckCircle2, Zap, DollarSign, Sparkles,
+  Layers, Map
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -22,283 +23,221 @@ export default function DashboardPage() {
   } = useStore();
 
   const courseProgress = getCourseProgress();
-  const aiServicesProgress = getDirectionProgress('ai-services');
-  const aiProductsProgress = getDirectionProgress('ai-products');
-  const aiTeachingProgress = getDirectionProgress('ai-teaching');
+  const weeklyPlanned = getWeeklyHoursPlanned();
+  const weeklyActual = getWeeklyHoursActual();
+  const totalIncome = getTotalIncome();
+  const completedLessons = lessons.filter(l => l.status === 'completed').length;
+  const totalLessons = lessons.length;
 
   const currentModule = modules.find(m => m.status === 'in_progress') || modules.find(m => m.status === 'not_started');
   const currentLesson = lessons.find(l => l.status === 'in_progress') || (currentModule ? lessons.find(l => l.module_id === currentModule.id && l.status !== 'completed') : null);
 
-  const weeklyPlanned = getWeeklyHoursPlanned();
-  const weeklyActual = getWeeklyHoursActual();
-  const totalIncome = getTotalIncome();
+  const moduleLessons = currentModule ? lessons.filter(l => l.module_id === currentModule.id) : [];
+  const moduleCompleted = moduleLessons.filter(l => l.status === 'completed').length;
+  const moduleTotal = moduleLessons.length;
 
-  const completedLessons = lessons.filter(l => l.status === 'completed').length;
-  const totalLessons = lessons.length;
+  const isFreshStart = evidenceCards.length === 0 && completedLessons === 0;
+  const needsScorecard = skills.some(s => s.score === 0);
+  const needsEvidence = evidenceCards.length === 0;
 
   const nextActions = [];
   if (currentLesson) {
-    nextActions.push({
-      label: `Продолжить: ${currentLesson.title}`,
-      href: `/lesson/${currentLesson.id}`,
-      icon: BookOpen,
-    });
+    nextActions.push({ label: `Продолжить урок: ${currentLesson.title}`, href: `/lesson/${currentLesson.id}`, icon: BookOpen, priority: 1 });
+  } else if (currentModule) {
+    const firstIncomplete = lessons.find(l => l.module_id === currentModule.id && l.status !== 'completed');
+    if (firstIncomplete) nextActions.push({ label: `Начать: ${firstIncomplete.title}`, href: `/lesson/${firstIncomplete.id}`, icon: BookOpen, priority: 1 });
   }
-  if (evidenceCards.length === 0) {
-    nextActions.push({
-      label: 'Создать первую Evidence Card',
-      href: '/evidence-vault',
-      icon: Database,
-    });
-  }
-  if (skills.some(s => s.score === 0)) {
-    nextActions.push({
-      label: 'Заполнить Skill Scorecard',
-      href: '/skill-scorecard',
-      icon: Target,
-    });
-  }
+  if (needsScorecard) nextActions.push({ label: 'Заполнить Skill Scorecard', href: '/skill-scorecard', icon: Target, priority: 2 });
+  if (needsEvidence && completedLessons > 0) nextActions.push({ label: 'Создать Evidence Card для пройденного урока', href: '/evidence-vault', icon: Database, priority: 2 });
+
+  nextActions.sort((a, b) => a.priority - b.priority);
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Dashboard</h1>
-        <p className="text-zinc-400 mt-1">
-          Управляй своим развитием как продуктом
-        </p>
-      </div>
-
-      {/* Money Connection Banner */}
-      <Card className="border-t-2 border-accent bg-surface">
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-accent text-sm font-medium mb-2">
-                <DollarSign className="h-4 w-4" />
-                Связь с целью
+    <div className="space-y-6 animate-fade-in">
+      {/* Hero — Текущий урок */}
+      <Card className="border-t-2 border-accent bg-surface overflow-hidden">
+        <CardContent className="p-0">
+          <div className="flex flex-col md:flex-row">
+            <div className="flex-1 p-6 md:p-8">
+              <div className="flex items-center gap-2 text-xs text-accent font-medium uppercase tracking-wider mb-3">
+                <Zap className="h-3.5 w-3.5" />
+                {currentLesson ? 'Продолжи обучение' : isFreshStart ? 'Начни здесь' : 'Твой прогресс'}
               </div>
-              <h3 className="text-xl font-bold md:text-2xl">{formatCurrency(user.income_goal)}/мес</h3>
-              <p className="text-zinc-400 mt-1">
-                Каждый урок → артефакт → применение → доказательство → деньги
-              </p>
+              {currentLesson ? (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline" className="text-xs">{currentModule ? `Модуль ${currentModule.order_index}` : ''}</Badge>
+                    <Badge className="bg-amber-500/10 text-amber-500 text-xs">В процессе</Badge>
+                  </div>
+                  <h2 className="text-xl font-bold md:text-2xl mb-1">{currentLesson.title}</h2>
+                  <p className="text-sm text-zinc-400 mb-4">{currentLesson.goal || 'Продолжи прохождение урока'}</p>
+                  <Link href={`/lesson/${currentLesson.id}`}>
+                    <Button size="lg" className="gap-2">
+                      <BookOpen className="h-4 w-4" /> Продолжить урок <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </>
+              ) : isFreshStart ? (
+                <>
+                  <h2 className="text-xl font-bold md:text-2xl mb-1">Добро пожаловать в AI Product Operator</h2>
+                  <p className="text-sm text-zinc-400 mb-4">12 модулей по 4 урока. Каждый урок → артефакт → доказательство → деньги.</p>
+                  <div className="flex gap-2">
+                    <Link href="/roadmap"><Button size="lg" className="gap-2"><Map className="h-4 w-4" /> Обзор курса <ArrowRight className="h-4 w-4" /></Button></Link>
+                    <Link href="/skill-scorecard"><Button variant="outline" size="lg" className="gap-2"><Target className="h-4 w-4" /> Стартовая диагностика</Button></Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold md:text-2xl mb-1">Курс завершён!</h2>
+                  <p className="text-sm text-zinc-400 mb-4">Ты прошёл все {totalLessons} уроков. Переходи к масштабированию.</p>
+                  <Link href="/roadmap"><Button variant="outline" size="lg"><Map className="h-4 w-4 mr-2" /> Карта курса</Button></Link>
+                </>
+              )}
             </div>
-            <div className="text-right">
-              <div className="text-sm text-zinc-400">Текущий доход</div>
-              <div className="text-xl font-bold text-emerald-400">{formatCurrency(totalIncome)}</div>
-              <Progress value={user.income_goal > 0 ? Math.min(100, (totalIncome / user.income_goal) * 100) : 0} className="w-full sm:w-48 mt-2" />
+            <div className="md:w-48 bg-zinc-800/30 p-6 md:p-8 flex flex-col justify-center border-t md:border-t-0 md:border-l border-zinc-800">
+              <div className="text-center">
+                <div className="text-sm text-zinc-500 mb-1">Курс</div>
+                <div className="text-3xl font-bold">{courseProgress}%</div>
+                <Progress value={courseProgress} className="mt-2 mb-1" />
+                <div className="text-xs text-zinc-500">{completedLessons}/{totalLessons} уроков</div>
+              </div>
+              {currentModule && moduleTotal > 0 && (
+                <div className="text-center mt-4 pt-4 border-t border-zinc-800">
+                  <div className="text-sm text-zinc-500 mb-1">Модуль {currentModule.order_index}</div>
+                  <div className="text-lg font-semibold">{moduleCompleted}/{moduleTotal}</div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Main Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Прогресс курса</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{courseProgress}%</div>
-            <Progress value={courseProgress} className="mt-2" />
-            <p className="text-xs text-zinc-500 mt-2">{completedLessons} из {totalLessons} уроков</p>
-          </CardContent>
-        </Card>
+      {/* Быстрые действия */}
+      {nextActions.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {nextActions.map((action, idx) => (
+            <Link key={idx} href={action.href}>
+              <Button variant={idx === 0 ? 'default' : 'outline'} size="sm" className="gap-2">
+                <action.icon className="h-4 w-4" /> {action.label}
+              </Button>
+            </Link>
+          ))}
+        </div>
+      )}
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Evidence Cards</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{evidenceCards.length}</div>
-            <p className="text-xs text-zinc-500 mt-2">
-              {evidenceCards.length === 0 ? 'Создай первую Evidence Card' : 'доказательств собрано'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Артефакты</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{artifacts.length}</div>
-            <p className="text-xs text-zinc-500 mt-2">
-              {artifacts.length === 0 ? 'Добавь первый артефакт' : 'артефактов создано'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Часы на неделе</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{weeklyActual}<span className="text-lg text-zinc-500">/{user.weekly_hours_goal}ч</span></div>
-            <Progress value={(weeklyActual / user.weekly_hours_goal) * 100} className="mt-2" />
-            <p className="text-xs text-zinc-500 mt-2">Запланировано: {weeklyPlanned}ч</p>
-          </CardContent>
-        </Card>
+      {/* Статистика */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card><CardContent className="p-4 text-center">
+          <div className="text-2xl font-bold">{completedLessons}</div>
+          <div className="text-xs text-zinc-500 mt-0.5">Уроков пройдено</div>
+        </CardContent></Card>
+        <Card><CardContent className="p-4 text-center">
+          <div className="text-2xl font-bold">{evidenceCards.length}</div>
+          <div className="text-xs text-zinc-500 mt-0.5">Evidence Cards</div>
+        </CardContent></Card>
+        <Card><CardContent className="p-4 text-center">
+          <div className="text-2xl font-bold">{artifacts.length}</div>
+          <div className="text-xs text-zinc-500 mt-0.5">Артефактов</div>
+        </CardContent></Card>
+        <Card><CardContent className="p-4 text-center">
+          <div className="text-2xl font-bold">{weeklyActual}<span className="text-sm text-zinc-600">/{user.weekly_hours_goal}ч</span></div>
+          <div className="text-xs text-zinc-500 mt-0.5">Часов на неделе</div>
+        </CardContent></Card>
       </div>
 
-      {/* Direction Progress */}
+      {/* Доход */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-accent-subtle"><DollarSign className="h-5 w-5 text-accent" /></div>
+              <div>
+                <div className="text-xs text-zinc-500">Цель / Текущий доход</div>
+                <div className="text-lg font-bold">{formatCurrency(user.income_goal)}/мес <span className="text-emerald-400">→ {formatCurrency(totalIncome)}</span></div>
+              </div>
+            </div>
+            <div className="w-32"><Progress value={user.income_goal > 0 ? Math.min(100, (totalIncome / user.income_goal) * 100) : 0} /></div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Прогресс по направлениям */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Прогресс по направлениям</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Направления</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {(['ai-services', 'ai-products', 'ai-teaching'] as const).map((dir) => {
             const progress = getDirectionProgress(dir);
             return (
-              <Card key={dir}>
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge className={getDirectionColor(dir)}>
-                      {getDirectionLabel(dir)}
-                    </Badge>
-                    <span className="text-sm font-bold">{progress}%</span>
-                  </div>
-                  <Progress value={progress} />
-                </CardContent>
-              </Card>
+              <Card key={dir}><CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge className={getDirectionColor(dir)}>{getDirectionLabel(dir)}</Badge>
+                  <span className="text-sm font-bold">{progress}%</span>
+                </div>
+                <Progress value={progress} />
+              </CardContent></Card>
             );
           })}
         </div>
       </div>
 
-      {/* Cross-Cutting Practices */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-5 w-5 text-accent" />
-            Сквозные практики
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
-              <div className="text-sm font-semibold text-accent mb-1">AI-Radar</div>
-              <p className="text-xs text-zinc-400">15–20 мин/нед: 1–2 источника + вывод «что реально меняет мою работу»</p>
-            </div>
-            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
-              <div className="text-sm font-semibold text-cyan-400 mb-1">Evals-мышление</div>
-              <p className="text-xs text-zinc-400">3–5 эталонных кейсов и критерий «сработало / нет» до масштабирования</p>
-            </div>
-            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
-              <div className="text-sm font-semibold text-amber-400 mb-1">Ментальные модели</div>
-              <p className="text-xs text-zinc-400">Токены, контекст, галлюцинации, reasoning — что не меняется от версии к версии</p>
-            </div>
-            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
-              <div className="text-sm font-semibold text-emerald-400 mb-1">Этика и раскрытие</div>
-              <p className="text-xs text-zinc-400">Честность о AI в работе, аккуратность с данными, проверка правил</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Current Module & Next Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Current Module */}
+      {/* Текущий модуль — мини-карта */}
+      {currentModule && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-amber-500" />
-              Текущий модуль
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Layers className="h-4 w-4 text-accent" />
+              Модуль {currentModule.order_index}: {currentModule.title}
+              <Badge className="ml-auto text-xs">{currentModule.status === 'in_progress' ? 'В процессе' : 'Не начат'}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {currentModule ? (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="outline">Модуль {currentModule.order_index}</Badge>
-                  <Badge className={currentModule.status === 'in_progress' ? 'bg-amber-500/10 text-amber-500' : ''}>
-                    {currentModule.status === 'in_progress' ? 'В процессе' : 'Не начат'}
-                  </Badge>
-                </div>
-                <h3 className="font-semibold text-lg mb-1">{currentModule.title}</h3>
-                <p className="text-sm text-zinc-400 mb-3">{currentModule.description}</p>
-                <div className="flex items-center gap-4 text-sm text-zinc-500">
-                  <span>Прогресс: {currentModule.progress}%</span>
-                  <span>Артефакты: {currentModule.artifact_count}</span>
-                  <span>Evidence: {currentModule.evidence_count}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-zinc-500">
-                <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Начни с Course Roadmap</p>
-              </div>
-            )}
+            <div className="space-y-1">
+              {moduleLessons.map((lesson) => (
+                <Link key={lesson.id} href={`/lesson/${lesson.id}`}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800/50 transition-colors text-sm">
+                  {lesson.status === 'completed' ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  ) : lesson.status === 'in_progress' ? (
+                    <Clock className="h-4 w-4 text-amber-500 shrink-0" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border-2 border-zinc-600 shrink-0" />
+                  )}
+                  <span className={lesson.status === 'completed' ? 'text-zinc-500' : lesson.status === 'in_progress' ? 'text-zinc-200 font-medium' : 'text-zinc-400'}>{lesson.title}</span>
+                  {lesson.id === currentLesson?.id && (
+                    <Badge variant="outline" className="ml-auto text-xs">Текущий</Badge>
+                  )}
+                </Link>
+              ))}
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Next Action */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ArrowRight className="h-5 w-5 text-accent" />
-              Следующее действие
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {nextActions.length > 0 ? (
-              <div className="space-y-3">
-                {nextActions.map((action, idx) => (
-                  <Link
-                    key={idx}
-                    href={action.href}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                  >
-                    <action.icon className="h-5 w-5 text-muted" />
-                    <span className="text-sm font-medium">{action.label}</span>
-                    <ArrowRight className="h-4 w-4 ml-auto text-zinc-400" />
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-zinc-500">
-                <CheckCircle2 className="h-12 w-12 mx-auto mb-3 text-emerald-500 opacity-50" />
-                <p className="text-emerald-400">Всё сделано! Проверь Evidence Vault.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Stats */}
+      {/* Сквозные практики */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-emerald-500" />
-            Быстрая статистика
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/50">
-              <div className="text-2xl font-bold">{completedLessons}</div>
-              <div className="text-xs text-zinc-500 mt-1">Уроков пройдено</div>
+        <CardContent className="p-4">
+          <details className="group">
+            <summary className="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer list-none">
+              <Sparkles className="h-4 w-4 text-accent" />
+              Сквозные практики
+              <ArrowRight className="h-3 w-3 ml-auto transition-transform group-open:rotate-90" />
+            </summary>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+              {[
+                { title: 'AI-Radar', desc: '15–20 мин/нед: 1–2 источника + вывод', color: 'text-accent' },
+                { title: 'Evals-мышление', desc: '3–5 эталонных кейсов до масштабирования', color: 'text-cyan-400' },
+                { title: 'Ментальные модели', desc: 'Токены, контекст, reasoning', color: 'text-amber-400' },
+                { title: 'Этика и раскрытие', desc: 'Честность о AI, аккуратность с данными', color: 'text-emerald-400' },
+              ].map((p, i) => (
+                <div key={i} className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-800">
+                  <div className={`text-sm font-semibold ${p.color} mb-1`}>{p.title}</div>
+                  <p className="text-xs text-zinc-500">{p.desc}</p>
+                </div>
+              ))}
             </div>
-            <div className="text-center p-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/50">
-              <div className="text-2xl font-bold">{evidenceCards.length}</div>
-              <div className="text-xs text-zinc-500 mt-1">Evidence Cards</div>
-            </div>
-            <div className="text-center p-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/50">
-              <div className="text-2xl font-bold">{artifacts.length}</div>
-              <div className="text-xs text-zinc-500 mt-1">Артефактов</div>
-            </div>
-            <div className="text-center p-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/50">
-              <div className="text-2xl font-bold">{skills.filter(s => s.score > 0).length}</div>
-              <div className="text-xs text-zinc-500 mt-1">Навыков оценено</div>
-            </div>
-          </div>
+          </details>
         </CardContent>
       </Card>
-
-      {/* Micro-copy footer */}
-      <div className="text-center py-4">
-        <p className="text-sm text-zinc-500 italic">
-          &ldquo;Артефакт важнее ощущения прогресса.&rdquo;
-        </p>
-      </div>
     </div>
   );
 }

@@ -27,6 +27,8 @@ export default function RoadmapPage() {
     return getFirstIncompleteLesson(moduleId);
   };
 
+  const completedAny = lessons.some(l => l.status === 'completed');
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -39,6 +41,23 @@ export default function RoadmapPage() {
         </p>
       </div>
 
+      {!completedAny && (
+        <Card className="border-accent/30 bg-accent-subtle/20">
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="p-2 rounded-lg bg-accent-subtle shrink-0"><Map className="h-5 w-5 text-accent" /></div>
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Как проходить курс</h3>
+              <div className="text-sm text-zinc-400 space-y-1">
+                <p>1. Выбери модуль с пометкой <Badge className="bg-accent text-accent-on text-xs mx-1">Сейчас</Badge></p>
+                <p>2. Нажми «Начать модуль» и проходи уроки по порядку</p>
+                <p>3. Каждый урок → теория → практика → артефакт → Evidence Card</p>
+                <p>4. Заполни чек-лист и закрой урок. Модули открываются последовательно.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {modules.map((module) => {
           const moduleLessons = getModuleLessons(module.id);
@@ -46,14 +65,20 @@ export default function RoadmapPage() {
           const completedCount = moduleLessons.filter(l => l.status === 'completed').length;
           const continueLesson = getModuleContinueLesson(module.id);
 
+          const isActive = module.status === 'in_progress' || (module.status === 'not_started' && !modules.find(m => m.order_index < module.order_index && m.status !== 'completed'));
           return (
             <Card
               key={module.id}
-              className={`relative transition-all hover:shadow-lg hover:shadow-accent/5 ${locked ? 'opacity-50' : ''}`}
+              className={`relative transition-all hover:shadow-lg hover:shadow-accent/5 ${locked ? 'opacity-50' : ''} ${isActive ? 'ring-1 ring-accent/40' : ''}`}
             >
               {locked && (
                 <div className="absolute top-4 right-4">
                   <Lock className="h-4 w-4 text-zinc-500" />
+                </div>
+              )}
+              {isActive && (
+                <div className="absolute -top-2.5 left-4">
+                  <Badge className="bg-accent text-accent-on text-xs">Сейчас</Badge>
                 </div>
               )}
               <CardHeader className="pb-3">
