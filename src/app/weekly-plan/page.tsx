@@ -14,11 +14,14 @@ import {
 } from '@/components/ui/dialog';
 import { getDirectionLabel, getDirectionColor, formatDate, exportToMarkdown } from '@/lib/utils';
 import { Direction } from '@/lib/types';
-import { Calendar, Plus, Clock, CheckCircle2, FileText } from 'lucide-react';
+import { Calendar, Plus, Clock, CheckCircle2, FileText, Save, Edit3 } from 'lucide-react';
 
 export default function WeeklyPlanPage() {
-  const { weeklyPlans, addWeeklyPlan, skills, addEvidenceCard } = useStore();
+  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, skills, addEvidenceCard } = useStore();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editReflection, setEditReflection] = useState('');
+  const [editHours, setEditHours] = useState(0);
   const [form, setForm] = useState({
     week_start: new Date().toISOString().split('T')[0],
     focus: '',
@@ -152,11 +155,18 @@ ${plan.weekly_reflection}`;
                       <h3 className="font-semibold text-lg">{plan.artifact_goal}</h3>
                     </div>
                     <div className="flex gap-2 flex-wrap">
+                      <Button variant="outline" size="sm" onClick={() => {
+                        setEditingId(plan.id);
+                        setEditReflection(plan.weekly_reflection);
+                        setEditHours(plan.actual_hours);
+                      }}>
+                        <Edit3 className="h-4 w-4 mr-1" /> Редакт.
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleExport(plan)}>
                         <FileText className="h-4 w-4 mr-1" /> Export
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => createEvidenceFromWeek(plan)}>
-                        <CheckCircle2 className="h-4 w-4 mr-1" /> Evidence Card
+                        <CheckCircle2 className="h-4 w-4 mr-1" /> Evidence
                       </Button>
                     </div>
                   </div>
@@ -179,6 +189,28 @@ ${plan.weekly_reflection}`;
                       <p className="text-sm">{plan.experiment}</p>
                     </div>
                   </div>
+
+                  {editingId === plan.id ? (
+                    <div className="space-y-3 mb-4 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                      <div>
+                        <Label>Фактические часы</Label>
+                        <Input type="number" value={editHours} onChange={e => setEditHours(+e.target.value)} className="w-24 mt-1" />
+                      </div>
+                      <div>
+                        <Label>Вывод недели</Label>
+                        <Textarea value={editReflection} onChange={e => setEditReflection(e.target.value)} className="mt-1" />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => {
+                          updateWeeklyPlan(plan.id, { actual_hours: editHours, weekly_reflection: editReflection });
+                          setEditingId(null);
+                        }}>
+                          <Save className="h-4 w-4 mr-1" /> Сохранить
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setEditingId(null)}>Отмена</Button>
+                      </div>
+                    </div>
+                  ) : null}
 
                   <div className="mb-4">
                     <Label className="text-xs text-zinc-500">Задачи</Label>

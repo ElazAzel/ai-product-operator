@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { getDirectionLabel, getDirectionColor } from '@/lib/utils';
+import { Direction } from '@/lib/types';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend
 } from 'recharts';
@@ -17,8 +18,12 @@ import { BarChart3, Target, TrendingUp, AlertTriangle, ArrowRight, Save } from '
 
 export default function SkillScorecardPage() {
   const { skills, updateSkill } = useStore();
+  const [mounted, setMounted] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ score: 0, confidence: 0, last_artifact: '', main_gap: '', next_step: '' });
+  const [directionFilter, setDirectionFilter] = useState<'all' | Direction>('all');
+
+  useEffect(() => { setMounted(true); }, []);
 
   const chartData = skills.map(s => ({
     name: s.name,
@@ -26,9 +31,12 @@ export default function SkillScorecardPage() {
     current: s.score,
   }));
 
-  const avgScore = skills.length > 0 ? Math.round(skills.reduce((sum, s) => sum + s.score, 0) / skills.length * 10) / 10 : 0;
-  const topSkills = [...skills].sort((a, b) => b.score - a.score).slice(0, 3);
-  const gaps = skills.filter(s => s.score <= 2);
+  const directionOptions: ('all' | Direction)[] = ['all', 'ai-services', 'ai-products', 'ai-teaching'];
+  const filteredSkills = directionFilter === 'all' ? skills : skills.filter(s => s.direction === directionFilter);
+  const avgScore = filteredSkills.length > 0 ? Math.round(filteredSkills.reduce((sum, s) => sum + s.score, 0) / filteredSkills.length * 10) / 10 : 0;
+  const topSkills = [...filteredSkills].sort((a, b) => b.score - a.score).slice(0, 3);
+  const gaps = filteredSkills.filter(s => s.score <= 2);
+  const allZero = skills.every(s => s.score === 0 && s.confidence === 0);
 
   const handleEdit = (skillId: string) => {
     const skill = skills.find(s => s.id === skillId);
@@ -61,6 +69,27 @@ export default function SkillScorecardPage() {
         <p className="text-zinc-400 mt-1">
           Диагностика навыков. Оцени честно — потом артефакты покажут правду.
         </p>
+      </div>
+
+      {allZero && (
+        <Card className="border-accent/30 bg-accent-subtle/20">
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="p-2 rounded-lg bg-accent-subtle shrink-0"><BarChart3 className="h-5 w-5 text-accent" /></div>
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Пройди стартовую диагностику</h3>
+              <p className="text-sm text-zinc-400">Оцени каждый из 9 навыков от 1 до 5. Честная оценка — база для роста. Нажми «Оценить» на любом навыке ниже.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Direction filter */}
+      <div className="flex gap-2 flex-wrap">
+        {directionOptions.map(d => (
+          <Button key={d} variant={directionFilter === d ? 'default' : 'outline'} size="sm" onClick={() => setDirectionFilter(d)}>
+            {d === 'all' ? 'Все' : getDirectionLabel(d)}
+          </Button>
+        ))}
       </div>
 
       {/* Stats */}
@@ -113,23 +142,25 @@ export default function SkillScorecardPage() {
         </CardHeader>
         <CardContent>
           <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={chartData}>
-                <PolarGrid stroke="#3f3f46" />
-                <PolarAngleAxis dataKey="name" tick={{ fill: '#a1a1aa', fontSize: 12 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 5]} tick={{ fill: '#71717a', fontSize: 10 }} />
-                <Radar name="Текущий уровень" dataKey="current" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.2} />
-                <Radar name="Baseline" dataKey="baseline" stroke="#3f3f46" fill="#3f3f46" fillOpacity={0.1} />
-                <Legend />
-              </RadarChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={chartData}>
+                  <PolarGrid stroke="#3f3f46" />
+                  <PolarAngleAxis dataKey="name" tick={{ fill: '#a1a1aa', fontSize: 12 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 5]} tick={{ fill: '#71717a', fontSize: 10 }} />
+                  <Radar name="Текущий уровень" dataKey="current" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.2} />
+                  <Radar name="Baseline" dataKey="baseline" stroke="#3f3f46" fill="#3f3f46" fillOpacity={0.1} />
+                  <Legend />
+                </RadarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Skills List */}
       <div className="space-y-4">
-        {skills.map((skill) => (
+        {filteredSkills.map((skill) => (
           <Card key={skill.id}>
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-4">

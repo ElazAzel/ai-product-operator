@@ -13,7 +13,7 @@ import { getDirectionLabel, getDirectionColor, exportToCSV, exportToJSON } from 
 import { Direction } from '@/lib/types';
 import {
   Settings as SettingsIcon, User, Target, Clock, Palette,
-  Download, Trash2, AlertTriangle
+  Download, Trash2, AlertTriangle, CheckCircle2, Moon, Sun
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [incomeGoal, setIncomeGoal] = useState(user.income_goal);
   const [weeklyHours, setWeeklyHours] = useState(user.weekly_hours_goal);
   const [directions, setDirections] = useState<Direction[]>(user.active_directions);
+  const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
     updateUser({
@@ -32,6 +33,19 @@ export default function SettingsPage() {
       weekly_hours_goal: weeklyHours,
       active_directions: directions,
     });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const toggleTheme = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    if (isDark) {
+      document.documentElement.classList.remove('dark');
+      updateUser({ theme: 'light' });
+    } else {
+      document.documentElement.classList.add('dark');
+      updateUser({ theme: 'dark' });
+    }
   };
 
   const toggleDirection = (dir: Direction) => {
@@ -99,6 +113,25 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Theme */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5 text-accent" />
+            Тема оформления
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-zinc-400">Переключить на светлую/тёмную тему</div>
+            <Button variant="outline" size="sm" onClick={toggleTheme} className="gap-2">
+              {typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? 'Светлая' : 'Тёмная'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Goals */}
       <Card>
         <CardHeader>
@@ -161,8 +194,8 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Button onClick={handleSave} className="w-full">
-        Сохранить настройки
+      <Button onClick={handleSave} className="w-full gap-2">
+        {saved ? <><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Сохранено</> : 'Сохранить настройки'}
       </Button>
 
       <Separator />
