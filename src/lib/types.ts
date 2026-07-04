@@ -1,7 +1,7 @@
 export type Direction = 'ai-services' | 'ai-products' | 'ai-teaching' | 'skill';
 export type ModuleStatus = 'not_started' | 'in_progress' | 'completed';
 export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
-export type EvidenceStatus = 'draft' | 'validated' | 'case-ready';
+export type EvidenceStatus = 'draft' | 'submitted' | 'needs_revision' | 'approved' | 'waived';
 export type ArtifactStatus = 'draft' | 'tested' | 'packaged' | 'published';
 export type ArtifactType = 'prompt' | 'workflow' | 'offer' | 'case' | 'demo' | 'report' | 'automation' | 'lesson' | 'checklist' | 'api-spec' | 'rag-demo' | 'agent-blueprint';
 export type CasePotential = 'yes' | 'no' | 'later';
@@ -69,8 +69,15 @@ export interface EvidenceCard {
   what_proven: string;
   what_not_proven: string;
   next_improvement: string;
+  reflection: string;
+  money_impact: string;
+  money_amount: number;
   case_potential: CasePotential;
   status: EvidenceStatus;
+  reviewer_id: string | null;
+  review_comment: string | null;
+  submitted_at: string | null;
+  approved_at: string | null;
   created_at: string;
 }
 

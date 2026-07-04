@@ -106,8 +106,15 @@ ${plan.weekly_reflection}`;
       what_proven: plan.weekly_reflection,
       what_not_proven: '',
       next_improvement: '',
+      reflection: '',
+      money_impact: '',
+      money_amount: 0,
       case_potential: 'later',
       status: 'draft',
+      reviewer_id: null,
+      review_comment: null,
+      submitted_at: null,
+      approved_at: null,
     });
   };
 

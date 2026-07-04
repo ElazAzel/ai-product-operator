@@ -29,10 +29,11 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
   const { id } = use(params);
   const router = useRouter();
   const {
-    lessons, modules,
+    lessons, modules, evidenceCards, user,
     completeLesson, startLesson, addEvidenceCard, addArtifact,
     setCurrentLesson, canCompleteLesson,
     getLessonChecklist, setLessonChecklist,
+    getEvidenceForLesson, approveEvidence, requestEvidenceRevision,
   } = useStore();
 
   const lesson = lessons.find(l => l.id === id);
@@ -48,6 +49,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
   const [evidenceForm, setEvidenceForm] = useState({
     what_done: '', artifact: '', artifact_url: '', where_applied: '',
     metric: '', what_proven: '', what_not_proven: '', next_improvement: '',
+    reflection: '', money_impact: '', money_amount: 0,
     case_potential: 'later' as 'yes' | 'no' | 'later',
   });
 
@@ -120,15 +122,30 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
       module_id: lesson.module_id,
       date: new Date().toISOString().split('T')[0],
       direction: lesson.application_area?.[0] || 'ai-services',
-      ...evidenceForm,
+      what_done: evidenceForm.what_done,
+      artifact: evidenceForm.artifact,
+      artifact_url: evidenceForm.artifact_url,
+      where_applied: evidenceForm.where_applied,
+      metric: evidenceForm.metric,
+      what_proven: evidenceForm.what_proven,
+      what_not_proven: evidenceForm.what_not_proven,
+      next_improvement: evidenceForm.next_improvement,
+      reflection: evidenceForm.reflection,
+      money_impact: evidenceForm.money_impact,
+      money_amount: evidenceForm.money_amount,
       case_potential: evidenceForm.case_potential,
-      status: 'draft',
+      status: 'submitted',
+      reviewer_id: null,
+      review_comment: null,
+      submitted_at: null,
+      approved_at: null,
     });
     setLessonChecklist(lesson.id, { ...checklist, evidence_card_filled: true });
     setShowEvidenceDialog(false);
     setEvidenceForm({
       what_done: '', artifact: '', artifact_url: '', where_applied: '',
       metric: '', what_proven: '', what_not_proven: '', next_improvement: '',
+      reflection: '', money_impact: '', money_amount: 0,
       case_potential: 'later',
     });
   };
@@ -177,15 +194,15 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
     }
   };
 
+  const lessonEvidence = evidenceCards.filter(e => e.lesson_id === lesson.id);
+  const hasApprovedEvidence = lessonEvidence.some(e => e.status === 'approved');
+  const hasSubmittedEvidence = lessonEvidence.some(e => e.status === 'submitted');
   const checklistItems = [
-    { key: 'criteria_1' as keyof CompletionChecklist, label: lesson.criteria_questions?.[0] || 'Критерий 1' },
-    { key: 'criteria_2' as keyof CompletionChecklist, label: lesson.criteria_questions?.[1] || 'Критерий 2' },
-    { key: 'criteria_3' as keyof CompletionChecklist, label: lesson.criteria_questions?.[2] || 'Критерий 3' },
+    { key: 'evidence_card_filled' as keyof CompletionChecklist, label: 'Evidence Card отправлена на проверку', auto: hasSubmittedEvidence },
     { key: 'artifact_added' as keyof CompletionChecklist, label: 'Артефакт добавлен' },
-    { key: 'evidence_card_filled' as keyof CompletionChecklist, label: 'Evidence Card заполнена' },
   ];
 
-  const completionPercentage = (Object.values(checklist).filter(Boolean).length / 5) * 100;
+  const completionPercentage = Math.min(100, ((Object.values(checklist).filter(Boolean).length + (hasApprovedEvidence ? 1 : 0)) / 3) * 100);
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl">
@@ -411,6 +428,52 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
             </Card>
           )}
 
+          {/* Evidence Status */}
+          {(() => {
+            const lessonEvidence = evidenceCards.filter(e => e.lesson_id === lesson.id);
+            const latestEvidence = lessonEvidence[lessonEvidence.length - 1];
+            return lessonEvidence.length > 0 ? (
+              <Card className={`border ${
+                latestEvidence.status === 'approved' ? 'border-emerald-500/20' :
+                latestEvidence.status === 'needs_revision' ? 'border-amber-500/20' :
+                'border-zinc-800'
+              }`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-4 w-4 text-accent" />
+                    <span className="text-sm font-medium">Evidence Card</span>
+                    <Badge variant="outline" className={`text-xs ${
+                      latestEvidence.status === 'approved' ? 'text-emerald-500' :
+                      latestEvidence.status === 'needs_revision' ? 'text-amber-500' :
+                      latestEvidence.status === 'submitted' ? 'text-blue-500' :
+                      'text-zinc-500'
+                    }`}>{{
+                      draft: 'Черновик', submitted: 'На проверке', needs_revision: 'На доработке',
+                      approved: 'Принято', waived: 'Зачтено'
+                    }[latestEvidence.status]}</Badge>
+                  </div>
+                  <p className="text-xs text-zinc-400 line-clamp-2">{latestEvidence.what_done}</p>
+                  {latestEvidence.review_comment && (
+                    <p className="text-xs text-zinc-500 mt-1 italic">Комментарий: {latestEvidence.review_comment}</p>
+                  )}
+                  {user.role === 'owner' && latestEvidence.status === 'submitted' && (
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" variant="outline" className="text-emerald-500 text-xs" onClick={() => approveEvidence(latestEvidence.id, 'owner')}>
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Принять
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-amber-500 text-xs" onClick={() => {
+                        const comment = prompt('Что нужно доработать?');
+                        if (comment) requestEvidenceRevision(latestEvidence.id, 'owner', comment);
+                      }}>
+                        <AlertCircle className="h-3 w-3 mr-1" /> На доработку
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : null;
+          })()}
+
           <Separator />
 
           {/* Action Buttons */}
@@ -449,14 +512,15 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
               <Button
                 className="w-full mt-2"
                 variant="primary"
-                disabled={completionPercentage < 100}
+                disabled={!getEvidenceForLesson(lesson.id).some(e => e.status === 'approved')}
                 onClick={handleTryComplete}
               >
-                {completionPercentage < 100 ? (
-                  `Заполни все пункты (${Math.round(completionPercentage)}%)`
-                ) : (
-                  'Отметить как пройдено'
-                )}
+                {getEvidenceForLesson(lesson.id).some(e => e.status === 'approved')
+                  ? 'Завершить урок'
+                  : getEvidenceForLesson(lesson.id).some(e => e.status === 'submitted')
+                    ? 'Ожидает проверки Evidence Card'
+                    : 'Сначала заполни Evidence Card'
+                }
               </Button>
             </div>
           ) : (
@@ -539,6 +603,23 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
                 className={evidenceErrors.metric ? 'border-red-500' : ''}
               />
               {evidenceErrors.metric && <p className="text-xs text-red-400 mt-1">Обязательное поле</p>}
+            </div>
+            <div>
+              <Label>Рефлексия</Label>
+              <Textarea value={evidenceForm.reflection} onChange={e => setEvidenceForm(f => ({ ...f, reflection: e.target.value }))}
+                placeholder="Что сработало, что улучшить в следующий раз" />
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label>Денежный эффект</Label>
+                <Input value={evidenceForm.money_impact} onChange={e => setEvidenceForm(f => ({ ...f, money_impact: e.target.value }))}
+                  placeholder="Например: получил заказ на 50 000 тг" />
+              </div>
+              <div>
+                <Label>Сумма (если есть)</Label>
+                <Input type="number" value={evidenceForm.money_amount || ''} onChange={e => setEvidenceForm(f => ({ ...f, money_amount: +e.target.value }))}
+                  placeholder="0" />
+              </div>
             </div>
             <div>
               <Label>Что доказано</Label>

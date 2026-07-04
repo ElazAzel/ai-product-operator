@@ -34,6 +34,7 @@ export default function EvidenceVaultPage() {
     lesson_id: '', module_id: '', direction: 'ai-services' as Direction,
     what_done: '', artifact: '', artifact_url: '', where_applied: '',
     metric: '', what_proven: '', what_not_proven: '', next_improvement: '',
+    reflection: '', money_impact: '', money_amount: 0,
     case_potential: 'later' as CasePotential,
   };
   const [form, setForm] = useState(emptyForm);
@@ -54,7 +55,7 @@ export default function EvidenceVaultPage() {
     aiServices: evidenceCards.filter(c => c.direction === 'ai-services').length,
     aiProducts: evidenceCards.filter(c => c.direction === 'ai-products').length,
     aiTeaching: evidenceCards.filter(c => c.direction === 'ai-teaching').length,
-    caseReady: evidenceCards.filter(c => c.status === 'case-ready').length,
+    approved: evidenceCards.filter(c => c.status === 'approved').length,
   };
 
   const openCreate = () => {
@@ -80,6 +81,9 @@ export default function EvidenceVaultPage() {
       what_proven: card.what_proven,
       what_not_proven: card.what_not_proven,
       next_improvement: card.next_improvement,
+      reflection: card.reflection || '',
+      money_impact: card.money_impact || '',
+      money_amount: card.money_amount || 0,
       case_potential: card.case_potential,
     });
     setFormErrors({});
@@ -105,6 +109,9 @@ export default function EvidenceVaultPage() {
         what_proven: form.what_proven,
         what_not_proven: form.what_not_proven,
         next_improvement: form.next_improvement,
+        reflection: form.reflection,
+        money_impact: form.money_impact,
+        money_amount: form.money_amount,
         case_potential: form.case_potential,
       });
     } else {
@@ -122,8 +129,15 @@ export default function EvidenceVaultPage() {
         what_proven: form.what_proven,
         what_not_proven: form.what_not_proven,
         next_improvement: form.next_improvement,
+        reflection: form.reflection,
+        money_impact: form.money_impact,
+        money_amount: form.money_amount,
         case_potential: form.case_potential,
         status: 'draft',
+        reviewer_id: null,
+        review_comment: null,
+        submitted_at: null,
+        approved_at: null,
       });
     }
     setShowDialog(false);
@@ -192,8 +206,8 @@ export default function EvidenceVaultPage() {
           <div className="text-xs text-zinc-500">AI-обучение</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-amber-400">{stats.caseReady}</div>
-          <div className="text-xs text-zinc-500">Готово к кейсу</div>
+          <div className="text-2xl font-bold text-emerald-400">{stats.approved}</div>
+          <div className="text-xs text-zinc-500">Принято</div>
         </CardContent></Card>
       </div>
 
@@ -226,7 +240,7 @@ export default function EvidenceVaultPage() {
           ))}
         </div>
         <div className="flex gap-2">
-          {(['all', 'draft', 'validated', 'case-ready'] as const).map(s => (
+          {(['all', 'draft', 'submitted', 'approved', 'needs_revision'] as const).map(s => (
             <Button key={s} variant={filterStatus === s ? 'default' : 'outline'} size="sm"
               onClick={() => setFilterStatus(s)}>
               {s === 'all' ? 'Все статусы' : getStatusLabel(s)}
@@ -389,6 +403,23 @@ export default function EvidenceVaultPage() {
                 ))}
               </div>
             </div>
+            <div>
+              <Label>Рефлексия</Label>
+              <Textarea value={form.reflection} onChange={e => setForm(f => ({ ...f, reflection: e.target.value }))}
+                placeholder="Что сработало, что улучшить" />
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label>Денежный эффект</Label>
+                <Input value={form.money_impact} onChange={e => setForm(f => ({ ...f, money_impact: e.target.value }))}
+                  placeholder="Например: получил заказ на 50 000 тг" />
+              </div>
+              <div>
+                <Label>Сумма (если есть)</Label>
+                <Input type="number" value={form.money_amount || ''} onChange={e => setForm(f => ({ ...f, money_amount: +e.target.value }))}
+                  placeholder="0" />
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>Отмена</Button>
@@ -459,6 +490,24 @@ export default function EvidenceVaultPage() {
                   <Label className="text-zinc-500">Следующее улучшение</Label>
                   <p className="text-sm">{detailCard.next_improvement || '—'}</p>
                 </div>
+                {detailCard.reflection && (
+                  <div>
+                    <Label className="text-zinc-500">Рефлексия</Label>
+                    <p className="text-sm">{detailCard.reflection}</p>
+                  </div>
+                )}
+                {detailCard.money_impact && (
+                  <div>
+                    <Label className="text-zinc-500">Денежный эффект</Label>
+                    <p className="text-sm">{detailCard.money_impact}{detailCard.money_amount ? ` (${detailCard.money_amount.toLocaleString()} ₸)` : ''}</p>
+                  </div>
+                )}
+                {detailCard.review_comment && (
+                  <div>
+                    <Label className="text-zinc-500">Комментарий проверяющего</Label>
+                    <p className="text-sm text-zinc-400">{detailCard.review_comment}</p>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" size="sm" onClick={() => { openEdit(detailCard.id); setSelectedCard(null); }}>

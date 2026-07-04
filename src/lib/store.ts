@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { User, Module, Lesson, EvidenceCard, Artifact, Skill, WeeklyPlan, Review, Direction, LessonStatus, CompletionChecklist, IncomeEntry, Certification, CertificationEvidenceCard } from './types';
+import { User, Module, Lesson, EvidenceCard, Artifact, Skill, WeeklyPlan, Review, Direction, LessonStatus, EvidenceStatus, CompletionChecklist, IncomeEntry, Certification, CertificationEvidenceCard } from './types';
 import { defaultUser, seedModules, seedLessons, defaultSkills, seedCertifications } from './seed-data';
 import { generateId, calculateModuleProgress } from './utils';
 
@@ -31,6 +31,9 @@ interface AppState {
   addEvidenceCard: (card: Omit<EvidenceCard, 'id' | 'created_at'>) => void;
   updateEvidenceCard: (id: string, updates: Partial<EvidenceCard>) => void;
   deleteEvidenceCard: (id: string) => void;
+  submitEvidenceForReview: (id: string) => void;
+  approveEvidence: (id: string, reviewerId: string, comment?: string) => void;
+  requestEvidenceRevision: (id: string, reviewerId: string, comment: string) => void;
 
   addArtifact: (artifact: Omit<Artifact, 'id' | 'created_at'>) => void;
   updateArtifact: (id: string, updates: Partial<Artifact>) => void;
@@ -55,6 +58,8 @@ interface AppState {
   getLessonChecklist: (lessonId: string) => CompletionChecklist;
 
   canCompleteLesson: (lessonId: string) => { canComplete: boolean; missing: string[] };
+  getEvidenceForLesson: (lessonId: string) => EvidenceCard[];
+  getPendingEvidence: () => EvidenceCard[];
 
   getCourseProgress: () => number;
   getDirectionProgress: (direction: Direction) => number;
@@ -130,11 +135,16 @@ export const useStore = create<AppState>((set, get) => ({
   }),
 
   completeLesson: (id) => set((state) => {
+    const hasApprovedEvidence = state.evidenceCards.some(e => e.lesson_id === id && e.status === 'approved');
+    if (!hasApprovedEvidence) return {};
     const newLessons = state.lessons.map(l => l.id === id ? { ...l, status: 'completed' as LessonStatus } : l);
     const lesson = state.lessons.find(l => l.id === id);
     const newModules = lesson ? state.modules.map(m => {
       if (m.id === lesson.module_id) {
-        const progress = calculateModuleProgress(newLessons, m.id);
+        const evidenceIds = newLessons.filter(l => l.module_id === m.id).map(l => l.id);
+        const approvedEvidenceCount = state.evidenceCards.filter(e => evidenceIds.includes(e.lesson_id || '') && e.status === 'approved').length;
+        const totalLessons = newLessons.filter(l => l.module_id === m.id).length;
+        const progress = totalLessons > 0 ? Math.round((approvedEvidenceCount / totalLessons) * 100) : 0;
         const allCompleted = newLessons.filter(l => l.module_id === m.id).every(l => l.status === 'completed');
         const moduleEvidence = state.evidenceCards.filter(e => e.module_id === m.id).length;
         const moduleArtifacts = state.artifacts.filter(a => {
@@ -160,6 +170,13 @@ export const useStore = create<AppState>((set, get) => ({
       ...card,
       id: generateId(),
       created_at: new Date().toISOString(),
+      reflection: card.reflection || '',
+      money_impact: card.money_impact || '',
+      money_amount: card.money_amount || 0,
+      reviewer_id: card.reviewer_id || null,
+      review_comment: card.review_comment || null,
+      submitted_at: card.status === 'submitted' ? new Date().toISOString() : null,
+      approved_at: card.approved_at || null,
     };
     const newModules = card.module_id ? state.modules.map(m => {
       if (m.id === card.module_id) {
@@ -187,6 +204,39 @@ export const useStore = create<AppState>((set, get) => ({
     }) : state.modules;
     setTimeout(() => get().saveToStorage(), 0);
     return { evidenceCards: state.evidenceCards.filter(c => c.id !== id), modules: newModules };
+  }),
+
+  submitEvidenceForReview: (id) => set((state) => {
+    const newCards = state.evidenceCards.map(c => c.id === id && c.status === 'draft' ? {
+      ...c,
+      status: 'submitted' as EvidenceStatus,
+      submitted_at: new Date().toISOString(),
+    } : c);
+    setTimeout(() => get().saveToStorage(), 0);
+    return { evidenceCards: newCards };
+  }),
+
+  approveEvidence: (id, reviewerId, comment) => set((state) => {
+    const newCards = state.evidenceCards.map(c => c.id === id && c.status === 'submitted' ? {
+      ...c,
+      status: 'approved' as EvidenceStatus,
+      reviewer_id: reviewerId,
+      review_comment: comment || null,
+      approved_at: new Date().toISOString(),
+    } : c);
+    setTimeout(() => get().saveToStorage(), 0);
+    return { evidenceCards: newCards };
+  }),
+
+  requestEvidenceRevision: (id, reviewerId, comment) => set((state) => {
+    const newCards = state.evidenceCards.map(c => c.id === id && c.status === 'submitted' ? {
+      ...c,
+      status: 'needs_revision' as EvidenceStatus,
+      reviewer_id: reviewerId,
+      review_comment: comment,
+    } : c);
+    setTimeout(() => get().saveToStorage(), 0);
+    return { evidenceCards: newCards };
   }),
 
   addArtifact: (artifact) => set((state) => {
@@ -287,13 +337,30 @@ export const useStore = create<AppState>((set, get) => ({
   canCompleteLesson: (lessonId) => {
     const checklist = get().lessonChecklists[lessonId] || defaultChecklist;
     const lesson = get().lessons.find(l => l.id === lessonId);
+    const evidence = get().evidenceCards.filter(e => e.lesson_id === lessonId);
+    const hasApprovedEvidence = evidence.some(e => e.status === 'approved');
+    const hasSubmittedEvidence = evidence.some(e => e.status === 'submitted');
     const missing: string[] = [];
-    if (!checklist.criteria_1) missing.push(lesson?.criteria_questions?.[0] || 'Критерий 1');
-    if (!checklist.criteria_2) missing.push(lesson?.criteria_questions?.[1] || 'Критерий 2');
-    if (!checklist.criteria_3) missing.push(lesson?.criteria_questions?.[2] || 'Критерий 3');
-    if (!checklist.artifact_added) missing.push('Артефакт добавлен');
-    if (!checklist.evidence_card_filled) missing.push('Evidence Card заполнена');
-    return { canComplete: missing.length === 0, missing };
+    if (!checklist.evidence_card_filled && !hasSubmittedEvidence) missing.push('Evidence Card не заполнена');
+    if (!checklist.artifact_added) missing.push('Артефакт не добавлен');
+    if (!hasApprovedEvidence) {
+      if (hasSubmittedEvidence) {
+        missing.push('Evidence Card ожидает проверки');
+      } else if (!checklist.evidence_card_filled) {
+        missing.push('Заполни Evidence Card и отправь на проверку');
+      } else {
+        missing.push('Отправь Evidence Card на проверку');
+      }
+    }
+    return { canComplete: missing.length === 0 && hasApprovedEvidence, missing };
+  },
+
+  getEvidenceForLesson: (lessonId) => {
+    return get().evidenceCards.filter(e => e.lesson_id === lessonId).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  },
+
+  getPendingEvidence: () => {
+    return get().evidenceCards.filter(e => e.status === 'submitted').sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   },
 
   getCourseProgress: () => {
