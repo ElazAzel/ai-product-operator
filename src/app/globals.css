@@ -212,6 +212,53 @@ h1, h2, h3, h4 {
   }
 }
 
+/* Mobile app-like overscroll */
+html {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Mobile page transition */
+@keyframes pageIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-page-in {
+  animation: pageIn 200ms ease-out;
+}
+
+/* Slide up for bottom drawer */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Hide scrollbar on mobile while keeping scroll */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Safe area bottom for mobile nav */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }

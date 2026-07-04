@@ -21,7 +21,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           sidebarOpen ? "md:ml-64" : "md:ml-16"
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 py-6 pb-24 md:px-6 md:py-8 md:pb-8">
+        <div className="mx-auto max-w-7xl px-4 py-4 pb-20 md:px-6 md:py-8 md:pb-8">
           {children}
         </div>
       </main>
