@@ -141,9 +141,9 @@ export default function SkillScorecardPage() {
           <CardTitle>Карта навыков</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px]">
+          <div className="h-[400px] w-full min-w-0">
             {mounted && (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <RadarChart data={chartData}>
                   <PolarGrid stroke="#3f3f46" />
                   <PolarAngleAxis dataKey="name" tick={{ fill: '#a1a1aa', fontSize: 12 }} />

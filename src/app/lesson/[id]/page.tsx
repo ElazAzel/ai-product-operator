@@ -45,6 +45,9 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [showMissingDialog, setShowMissingDialog] = useState(false);
   const [missingItems, setMissingItems] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const [evidenceForm, setEvidenceForm] = useState({
     what_done: '', artifact: '', artifact_url: '', where_applied: '',
@@ -429,41 +432,33 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
           )}
 
           {/* Evidence Status */}
-          {(() => {
-            const lessonEvidence = evidenceCards.filter(e => e.lesson_id === lesson.id);
-            const latestEvidence = lessonEvidence[lessonEvidence.length - 1];
-            return lessonEvidence.length > 0 ? (
-              <Card className={`border ${
-                latestEvidence.status === 'approved' ? 'border-emerald-500/20' :
-                latestEvidence.status === 'needs_revision' ? 'border-amber-500/20' :
-                'border-zinc-800'
-              }`}>
+          {mounted && lessonEvidence.length > 0 && (() => {
+            const ev = lessonEvidence[lessonEvidence.length - 1];
+            const statusColors: Record<string, string> = { approved: 'border-emerald-500/20', needs_revision: 'border-amber-500/20' };
+            const statusText: Record<string, string> = { draft: 'Черновик', submitted: 'На проверке', needs_revision: 'На доработке', approved: 'Принято', waived: 'Зачтено' };
+            const badgeColors: Record<string, string> = { approved: 'text-emerald-500', needs_revision: 'text-amber-500', submitted: 'text-blue-500' };
+            return (
+              <Card className={`border ${statusColors[ev.status] || 'border-zinc-800'}`}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="h-4 w-4 text-accent" />
                     <span className="text-sm font-medium">Evidence Card</span>
-                    <Badge variant="outline" className={`text-xs ${
-                      latestEvidence.status === 'approved' ? 'text-emerald-500' :
-                      latestEvidence.status === 'needs_revision' ? 'text-amber-500' :
-                      latestEvidence.status === 'submitted' ? 'text-blue-500' :
-                      'text-zinc-500'
-                    }`}>{{
-                      draft: 'Черновик', submitted: 'На проверке', needs_revision: 'На доработке',
-                      approved: 'Принято', waived: 'Зачтено'
-                    }[latestEvidence.status]}</Badge>
+                    <Badge variant="outline" className={`text-xs ${badgeColors[ev.status] || 'text-zinc-500'}`}>
+                      {statusText[ev.status] || ev.status}
+                    </Badge>
                   </div>
-                  <p className="text-xs text-zinc-400 line-clamp-2">{latestEvidence.what_done}</p>
-                  {latestEvidence.review_comment && (
-                    <p className="text-xs text-zinc-500 mt-1 italic">Комментарий: {latestEvidence.review_comment}</p>
+                  <p className="text-xs text-zinc-400 line-clamp-2">{ev.what_done}</p>
+                  {ev.review_comment && (
+                    <p className="text-xs text-zinc-500 mt-1 italic">Комментарий: {ev.review_comment}</p>
                   )}
-                  {user.role === 'owner' && latestEvidence.status === 'submitted' && (
+                  {user.role === 'owner' && ev.status === 'submitted' && (
                     <div className="flex gap-2 mt-2">
-                      <Button size="sm" variant="outline" className="text-emerald-500 text-xs" onClick={() => approveEvidence(latestEvidence.id, 'owner')}>
+                      <Button size="sm" variant="outline" className="text-emerald-500 text-xs" onClick={() => approveEvidence(ev.id, 'owner')}>
                         <CheckCircle2 className="h-3 w-3 mr-1" /> Принять
                       </Button>
                       <Button size="sm" variant="outline" className="text-amber-500 text-xs" onClick={() => {
                         const comment = prompt('Что нужно доработать?');
-                        if (comment) requestEvidenceRevision(latestEvidence.id, 'owner', comment);
+                        if (comment) requestEvidenceRevision(ev.id, 'owner', comment);
                       }}>
                         <AlertCircle className="h-3 w-3 mr-1" /> На доработку
                       </Button>
@@ -471,7 +466,7 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
                   )}
                 </CardContent>
               </Card>
-            ) : null;
+            );
           })()}
 
           <Separator />
@@ -512,12 +507,12 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
               <Button
                 className="w-full mt-2"
                 variant="primary"
-                disabled={!getEvidenceForLesson(lesson.id).some(e => e.status === 'approved')}
+                disabled={!hasApprovedEvidence}
                 onClick={handleTryComplete}
               >
-                {getEvidenceForLesson(lesson.id).some(e => e.status === 'approved')
+                {!mounted ? 'Загрузка...' : hasApprovedEvidence
                   ? 'Завершить урок'
-                  : getEvidenceForLesson(lesson.id).some(e => e.status === 'submitted')
+                  : hasSubmittedEvidence
                     ? 'Ожидает проверки Evidence Card'
                     : 'Сначала заполни Evidence Card'
                 }
