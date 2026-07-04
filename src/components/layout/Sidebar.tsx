@@ -96,7 +96,7 @@ export function Sidebar() {
           const active = isActive(item.href);
           return (
             <Link key={item.href} href={item.href}
-              className="flex flex-col items-center gap-0.5 py-2 px-3 min-w-0 flex-1"
+              className="relative flex flex-col items-center gap-0.5 py-2 px-3 min-w-0 flex-1"
             >
               <div className={cn(
                 "flex items-center justify-center h-7 w-7 rounded-lg transition-colors",

@@ -137,11 +137,11 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
       money_impact: evidenceForm.money_impact,
       money_amount: evidenceForm.money_amount,
       case_potential: evidenceForm.case_potential,
-      status: 'submitted',
-      reviewer_id: null,
+      status: user.role === 'owner' ? 'approved' : 'submitted',
+      reviewer_id: user.role === 'owner' ? 'self' : null,
       review_comment: null,
-      submitted_at: null,
-      approved_at: null,
+      submitted_at: user.role === 'owner' ? new Date().toISOString() : null,
+      approved_at: user.role === 'owner' ? new Date().toISOString() : null,
     });
     setLessonChecklist(lesson.id, { ...checklist, evidence_card_filled: true });
     setShowEvidenceDialog(false);
@@ -480,6 +480,29 @@ export default function LessonPage({ params }: { params: Promise<{ id: string }>
               <Button variant="outline" className="w-full" onClick={() => setShowEvidenceDialog(true)}>
                 <FileText className="h-4 w-4 mr-2" /> Заполнить Evidence Card
               </Button>
+
+              {/* Criteria Questions */}
+              {lesson.criteria_questions && lesson.criteria_questions.filter(Boolean).length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <Label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Критерии готовности</Label>
+                  {lesson.criteria_questions.filter(Boolean).map((q, i) => (
+                    <label key={i} className="flex items-center gap-2.5 text-sm cursor-pointer group"
+                      onClick={() => {
+                        const key = `criteria_${i + 1}` as keyof CompletionChecklist;
+                        handleChecklistChange(key, !checklist[key]);
+                      }}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                        checklist[`criteria_${i + 1}` as keyof CompletionChecklist]
+                          ? 'bg-accent border-accent' : 'border-zinc-600 group-hover:border-zinc-400'
+                      }`}>
+                        {checklist[`criteria_${i + 1}` as keyof CompletionChecklist] && <CheckCircle2 className="h-3 w-3 text-white" />}
+                      </div>
+                      <span className={`text-xs ${checklist[`criteria_${i + 1}` as keyof CompletionChecklist] ? 'text-zinc-500 line-through' : ''}`}>{q}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
 
               {/* Checklist */}
               <div className="space-y-2.5 pt-2">

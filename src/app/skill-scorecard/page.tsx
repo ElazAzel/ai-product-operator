@@ -14,7 +14,7 @@ import { Direction } from '@/lib/types';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend
 } from 'recharts';
-import { BarChart3, Target, TrendingUp, AlertTriangle, ArrowRight, Save } from 'lucide-react';
+import { BarChart3, Target, TrendingUp, AlertTriangle, Save } from 'lucide-react';
 
 export default function SkillScorecardPage() {
   const { skills, updateSkill } = useStore();

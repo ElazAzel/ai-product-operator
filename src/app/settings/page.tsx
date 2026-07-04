@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { getDirectionLabel, getDirectionColor, exportToCSV, exportToJSON } from '@/lib/utils';
 import { Direction } from '@/lib/types';
 import {
-  Settings as SettingsIcon, User, Target, Clock, Palette,
+  Settings as SettingsIcon, User, Target, Palette,
   Download, Trash2, AlertTriangle, CheckCircle2, Moon, Sun
 } from 'lucide-react';
 

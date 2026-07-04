@@ -17,7 +17,7 @@ import {
 } from '@/lib/utils';
 import { Direction, EvidenceStatus, CasePotential } from '@/lib/types';
 import {
-  Database, Plus, Search, Download, Trash2, ExternalLink, Pencil, CheckCircle2, Award, Circle
+  Database, Plus, Search, Download, Trash2, ExternalLink, Pencil, CheckCircle2, Award
 } from 'lucide-react';
 
 export default function EvidenceVaultPage() {
