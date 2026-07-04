@@ -54,20 +54,24 @@ export function Sidebar() {
           {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
       </div>
-      <nav className="flex-1 space-y-1 p-2">
+      <nav className="flex-1 space-y-1 overflow-y-auto p-2 scrollbar-thin">
         {navItems.map((item) => (
           <Link key={item.href} href={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
               isActive(item.href)
                 ? "bg-accent-subtle text-accent"
                 : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100",
-              !sidebarOpen && "justify-center"
+              !sidebarOpen && "justify-center px-0"
             )}
-            title={!sidebarOpen ? item.label : undefined}
           >
             <item.icon className="h-5 w-5 shrink-0" />
             {sidebarOpen && <span>{item.label}</span>}
+            {!sidebarOpen && (
+              <div className="pointer-events-none absolute left-full ml-3 hidden rounded-md border bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-100 shadow-lg group-hover:block whitespace-nowrap z-50">
+                {item.label}
+              </div>
+            )}
           </Link>
         ))}
       </nav>
@@ -160,11 +164,11 @@ export function Sidebar() {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 hidden h-screen border-r bg-zinc-950 transition-all duration-300 md:block",
+          "fixed left-0 top-0 z-40 hidden h-screen overflow-y-auto border-r border-zinc-800/50 bg-zinc-950 transition-all duration-300 md:block",
           sidebarOpen ? "w-64" : "w-16"
         )}
       >
-        <div className="flex h-full flex-col">{navContent}</div>
+        <div className="flex min-h-full flex-col">{navContent}</div>
       </aside>
     </>
   );
