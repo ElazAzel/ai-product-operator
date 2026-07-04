@@ -212,14 +212,15 @@ h1, h2, h3, h4 {
   }
 }
 
-/* Mobile app-like overscroll */
-html {
-  overscroll-behavior-y: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-body {
-  overscroll-behavior-y: none;
+/* Mobile app-like overscroll — only on mobile to preserve desktop scroll feel */
+@media (max-width: 768px) {
+  html {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  body {
+    overscroll-behavior-y: none;
+  }
 }
 
 /* Mobile page transition */
