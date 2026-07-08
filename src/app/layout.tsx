@@ -19,8 +19,12 @@ export const metadata: Metadata = {
   description: "Персональная операционная система обучения AI",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
     apple: "/icon.svg",
+    shortcut: "/favicon.ico",
   },
   appleWebApp: {
     capable: true,
